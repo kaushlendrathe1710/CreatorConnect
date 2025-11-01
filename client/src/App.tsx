@@ -42,7 +42,7 @@ function Router() {
       ) : (
         /* Fully authenticated with complete profile */
         <>
-          <Route path="/" component={DashboardPage} />
+          <Route path="/" component={FeedPage} />
           <Route path="/feed" component={FeedPage} />
           <Route path="/profile/:username" component={ProfilePage} />
           <Route path="/dashboard" component={DashboardPage} />

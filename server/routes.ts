@@ -979,6 +979,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===== SUGGESTED USERS ROUTE =====
+  app.get("/api/users/suggested", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get users the current user is not following (limit to 10 random users)
+      const following = await storage.getFollowing(userId);
+      const followingIds = new Set(following.map((f: any) => f.followingId));
+      
+      // Search for all users and filter out current user and already following
+      const allUsers = await storage.searchUsers('');
+      
+      const suggestedUsers = allUsers
+        .filter((u: any) => u.id !== userId && !followingIds.has(u.id))
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 10)
+        .map((user: any) => ({
+          id: user.id,
+          username: user.username,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          avatarUrl: user.profileImageUrl,
+          isCreator: user.isCreator,
+          bio: user.bio,
+        }));
+
+      res.json(suggestedUsers);
+    } catch (error) {
+      console.error("Error fetching suggested users:", error);
+      res.status(500).json({ message: "Failed to fetch suggested users" });
+    }
+  });
+
   // ===== SEARCH ROUTES =====
   app.get("/api/search/users", isAuthenticated, async (req, res) => {
     try {
