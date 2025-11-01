@@ -13,6 +13,13 @@ CreatorHub is a subscription-based social media platform that enables creators t
 - Improved visual hierarchy with better spacing, cards with hover effects, and numbered steps
 - Clearer call-to-action buttons for both "Start Creating" and "Explore Creators"
 
+**Authentication Flow Updates**: Streamlined Email OTP authentication with first-time user onboarding:
+- Single "Log In" button (removed "Sign Up") - all users use the same entry point
+- Email OTP authentication via Replit Auth for all users
+- First-time users automatically redirected to onboarding page to complete profile (name and mobile number)
+- Returning users with completed profiles automatically redirected to feed/dashboard
+- Mobile number field added to user schema for enhanced user profiles
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.

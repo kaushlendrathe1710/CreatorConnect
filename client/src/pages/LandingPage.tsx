@@ -24,17 +24,10 @@ export default function LandingPage() {
 
           <div className="flex items-center gap-2">
             <Button
-              variant="ghost"
               onClick={handleLogin}
               data-testid="button-login"
             >
               Log In
-            </Button>
-            <Button
-              onClick={handleLogin}
-              data-testid="button-signup"
-            >
-              Sign Up
             </Button>
             <ThemeToggle />
           </div>

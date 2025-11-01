@@ -124,6 +124,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Onboarding endpoint for first-time users
+  app.post("/api/user/onboarding", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { firstName, lastName, phoneNumber } = req.body;
+
+      if (!firstName || !lastName || !phoneNumber) {
+        return res.status(400).json({ message: "First name, last name, and phone number are required" });
+      }
+
+      const updated = await storage.updateUser(userId, {
+        firstName,
+        lastName,
+        phoneNumber,
+      });
+
+      res.json(updated);
+    } catch (error) {
+      console.error("Error completing onboarding:", error);
+      res.status(500).json({ message: "Failed to complete onboarding" });
+    }
+  });
+
   // ===== USER ROUTES =====
   app.get("/api/users/:username", async (req, res) => {
     try {
@@ -163,7 +186,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/users/profile", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const { username, firstName, lastName, bio, isCreator, subscriptionPrice } = req.body;
+      const { username, firstName, lastName, phoneNumber, bio, isCreator, subscriptionPrice } = req.body;
 
       // Validate subscription price for creators (already in cents from client)
       if (isCreator && subscriptionPrice) {
@@ -176,6 +199,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         username,
         firstName,
         lastName,
+        phoneNumber,
         bio,
         isCreator,
         subscriptionPrice: subscriptionPrice || null,
@@ -199,7 +223,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "You can only update your own profile" });
       }
 
-      const { username, firstName, lastName, bio, isCreator, subscriptionPrice } = req.body;
+      const { username, firstName, lastName, phoneNumber, bio, isCreator, subscriptionPrice } = req.body;
 
       // Validate subscription price for creators (already in cents from client)
       if (isCreator && subscriptionPrice) {
@@ -212,6 +236,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         username,
         firstName,
         lastName,
+        phoneNumber,
         bio,
         isCreator,
         subscriptionPrice: subscriptionPrice || null,
