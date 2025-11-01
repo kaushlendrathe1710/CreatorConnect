@@ -79,8 +79,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Create session
-      req.login({ claims: { sub: user.id, email: user.email } }, (err: any) => {
+      // Create session with expires_at (7 days from now)
+      const expiresAt = Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60); // 7 days
+      req.login({ 
+        claims: { sub: user.id, email: user.email },
+        expires_at: expiresAt 
+      }, (err: any) => {
         if (err) {
           console.error("Error creating session:", err);
           return res.status(500).json({ message: "Failed to create session" });
