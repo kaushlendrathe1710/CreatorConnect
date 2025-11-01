@@ -1,4 +1,4 @@
-import { Home, Search, Compass, MessageCircle, Heart, PlusSquare, User } from "lucide-react";
+import { Home, Search, Compass, MessageCircle, Heart, PlusSquare, User, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,6 +25,8 @@ export function InstagramLayout({ children }: InstagramLayoutProps) {
   const displayName = (user as any)?.firstName && (user as any)?.lastName 
     ? `${(user as any).firstName} ${(user as any).lastName}`
     : (user as any)?.name || (user as any)?.username || "User";
+
+  const isAdmin = (user as any)?.isAdmin;
 
   const navItems = [
     { icon: Home, label: "Home", path: "/", testId: "nav-home" },
@@ -60,6 +62,19 @@ export function InstagramLayout({ children }: InstagramLayoutProps) {
                 <span className="font-normal">{item.label}</span>
               </Button>
             ))}
+            
+            {/* Admin Panel Button - Only visible to admins */}
+            {isAdmin && (
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-4 px-3 py-6 text-base hover-elevate border-t mt-2 pt-4"
+                onClick={() => setLocation("/admin")}
+                data-testid="nav-admin-panel"
+              >
+                <Shield className="w-6 h-6 text-primary" />
+                <span className="font-semibold text-primary">Admin Panel</span>
+              </Button>
+            )}
           </nav>
         </div>
       </aside>

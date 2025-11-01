@@ -37,6 +37,7 @@ export const users = pgTable("users", {
   username: varchar("username").unique(),
   bio: text("bio"),
   isCreator: boolean("is_creator").default(false).notNull(),
+  isAdmin: boolean("is_admin").default(false).notNull(),
   subscriptionPrice: integer("subscription_price"), // in cents
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeAccountId: varchar("stripe_account_id"), // for payouts

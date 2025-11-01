@@ -6,6 +6,22 @@ CreatorHub is a subscription-based social media platform that enables creators t
 
 ## Recent Updates (November 2025)
 
+**Admin Features & Dashboard**: Complete admin system with Instagram-style admin panel:
+- **Super Admin**: Hardcoded admin user (kaushlendra.k12@fms.edu) created on server startup
+  - Cannot be deleted or demoted
+  - Full platform access and control
+- **Admin Dashboard** with left sidebar navigation:
+  - Dashboard: Overview stats (Total Users, Creators, Posts, Admins)
+  - Users: Manage all users, grant/revoke admin privileges, delete users
+  - Posts: Content moderation with ability to delete any post
+  - Settings: Platform configuration (coming soon)
+- **Admin Panel Button**: Visible only to admin users in main navigation sidebar
+- **Admin Middleware**: Secure authorization checks for all admin routes
+- **Database Schema**: Added `isAdmin` boolean field to users table
+- **Security**: Super admin cannot be deleted or modified through admin panel
+
+## Recent Updates (November 2025)
+
 **Instagram-Style Application Layout**: Complete redesign to match Instagram's layout with three-panel design:
 - **Left Sidebar Navigation** (desktop):
   - CreatorHub logo

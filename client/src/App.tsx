@@ -16,6 +16,10 @@ import MessagesPage from "@/pages/MessagesPage";
 import ProfilePage from "@/pages/ProfilePage";
 import DashboardPage from "@/pages/DashboardPage";
 import NotificationsPage from "@/pages/NotificationsPage";
+import AdminDashboardPage from "@/pages/AdminDashboardPage";
+import AdminUsersPage from "@/pages/AdminUsersPage";
+import AdminPostsPage from "@/pages/AdminPostsPage";
+import AdminSettingsPage from "@/pages/AdminSettingsPage";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -53,6 +57,10 @@ function Router() {
           <Route path="/profile/:username" component={ProfilePage} />
           <Route path="/dashboard" component={DashboardPage} />
           <Route path="/notifications" component={NotificationsPage} />
+          <Route path="/admin" component={AdminDashboardPage} />
+          <Route path="/admin/users" component={AdminUsersPage} />
+          <Route path="/admin/posts" component={AdminPostsPage} />
+          <Route path="/admin/settings" component={AdminSettingsPage} />
           <Route component={NotFound} />
         </>
       )}
