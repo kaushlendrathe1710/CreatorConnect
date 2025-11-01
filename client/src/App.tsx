@@ -18,36 +18,38 @@ import NotFound from "@/pages/not-found";
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();
 
-  // Show landing page and login page for unauthenticated users
-  if (isLoading || !isAuthenticated) {
-    return (
-      <Switch>
-        <Route path="/" component={LandingPage} />
-        <Route path="/login" component={LoginPage} />
-        <Route component={LandingPage} />
-      </Switch>
-    );
-  }
-
-  // Check if user needs onboarding (first-time user without name)
-  if (user && (!(user as any).firstName || !(user as any).lastName || !(user as any).phoneNumber)) {
-    return (
-      <Switch>
-        <Route path="/onboarding" component={OnboardingPage} />
-        <Route component={OnboardingPage} />
-      </Switch>
-    );
-  }
-
-  // Show app routes for authenticated users
+  // Always allow access to login page
   return (
     <Switch>
-      <Route path="/" component={FeedPage} />
-      <Route path="/feed" component={FeedPage} />
-      <Route path="/profile/:username" component={ProfilePage} />
-      <Route path="/dashboard" component={DashboardPage} />
-      <Route path="/notifications" component={NotificationsPage} />
-      <Route component={NotFound} />
+      {/* Public routes - always accessible */}
+      <Route path="/login" component={LoginPage} />
+      
+      {/* Loading state */}
+      {isLoading ? (
+        <Route component={() => <div className="min-h-screen flex items-center justify-center">Loading...</div>} />
+      ) : !isAuthenticated ? (
+        /* Unauthenticated routes */
+        <>
+          <Route path="/" component={LandingPage} />
+          <Route component={LandingPage} />
+        </>
+      ) : user && (!(user as any).firstName || !(user as any).lastName || !(user as any).phoneNumber) ? (
+        /* Authenticated but needs onboarding */
+        <>
+          <Route path="/onboarding" component={OnboardingPage} />
+          <Route component={OnboardingPage} />
+        </>
+      ) : (
+        /* Fully authenticated with complete profile */
+        <>
+          <Route path="/" component={FeedPage} />
+          <Route path="/feed" component={FeedPage} />
+          <Route path="/profile/:username" component={ProfilePage} />
+          <Route path="/dashboard" component={DashboardPage} />
+          <Route path="/notifications" component={NotificationsPage} />
+          <Route component={NotFound} />
+        </>
+      )}
     </Switch>
   );
 }
