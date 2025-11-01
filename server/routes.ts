@@ -314,6 +314,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user stats (for analytics dashboard)
+  app.get("/api/users/stats/:userId", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Calculate stats
+      const subscribersCount = user.isCreator 
+        ? await storage.getActiveSubscribersCount(userId)
+        : 0;
+
+      const monthlyRevenue = user.isCreator && user.subscriptionPrice
+        ? (subscribersCount * user.subscriptionPrice) / 100 // Convert cents to dollars
+        : 0;
+
+      const posts = await storage.getPostsByUser(userId);
+      const totalLikes = posts.reduce((sum, post) => sum + (post.likesCount || 0), 0);
+      const totalComments = posts.reduce((sum, post) => sum + (post.commentsCount || 0), 0);
+      const totalPosts = posts.length;
+      
+      // Calculate engagement rate (likes + comments per post)
+      const engagementRate = totalPosts > 0 
+        ? Math.round(((totalLikes + totalComments) / totalPosts) * 100) / 100
+        : 0;
+
+      res.json({
+        subscribersCount,
+        monthlyRevenue, // Return as number, format in UI
+        engagementRate,
+        totalPosts,
+        totalLikes,
+        totalComments,
+      });
+    } catch (error) {
+      console.error("Error fetching user stats:", error);
+      res.status(500).json({ message: "Failed to fetch user stats" });
+    }
+  });
+
   // Update user profile - supports both /profile and /:id routes
   app.put("/api/users/profile", isAuthenticated, async (req: any, res) => {
     try {
@@ -444,6 +487,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching feed:", error);
       res.status(500).json({ message: "Failed to fetch feed" });
+    }
+  });
+
+  // Get posts by user
+  app.get("/api/posts/user/:userId", async (req: any, res) => {
+    try {
+      const posts = await storage.getPostsByUser(req.params.userId);
+      
+      const currentUserId = req.isAuthenticated?.() ? req.user?.claims?.sub : undefined;
+      
+      const enrichedPosts = await Promise.all(
+        posts.map(async (post) => {
+          const user = await storage.getUser(post.userId);
+          
+          // Check if user can view subscriber-only content
+          let canView = !post.isSubscriberOnly;
+          if (post.isSubscriberOnly && currentUserId !== post.userId) {
+            if (currentUserId) {
+              canView = await storage.hasActiveSubscription(currentUserId, post.userId);
+            }
+          } else if (currentUserId === post.userId) {
+            canView = true; // Creator can always view their own posts
+          }
+
+          return {
+            ...post,
+            user,
+            canView,
+          };
+        })
+      );
+
+      res.json(enrichedPosts);
+    } catch (error) {
+      console.error("Error fetching user posts:", error);
+      res.status(500).json({ message: "Failed to fetch user posts" });
     }
   });
 
