@@ -136,11 +136,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const followingCount = await storage.getFollowingCount(user.id);
       const posts = await storage.getPostsByUser(user.id);
 
-      // Check if current user is following this user
+      // Check if current user is following/subscribed to this user
       let isFollowing = false;
+      let isSubscribed = false;
       if (req.isAuthenticated()) {
         const currentUserId = (req.user as any).claims.sub;
         isFollowing = await storage.isFollowing(currentUserId, user.id);
+        isSubscribed = await storage.hasActiveSubscription(currentUserId, user.id);
       }
 
       res.json({
@@ -149,6 +151,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         followingCount,
         postsCount: posts.length,
         isFollowing,
+        isSubscribed,
       });
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -601,7 +604,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isRead: false,
         });
 
-        const invoice = subscription.latest_invoice as Stripe.Invoice;
+        const invoice = subscription.latest_invoice as Stripe.Invoice & {
+          payment_intent?: Stripe.PaymentIntent | string;
+        };
         const paymentIntent = invoice?.payment_intent;
         const clientSecret = typeof paymentIntent === 'string' 
           ? null 

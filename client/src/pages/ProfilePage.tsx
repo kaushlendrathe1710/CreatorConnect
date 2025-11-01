@@ -21,7 +21,7 @@ export default function ProfilePage() {
   const username = params?.username || "";
 
   // Fetch profile data
-  const { data: profile, isLoading: profileLoading } = useQuery<User & { followersCount: number; followingCount: number; postsCount: number }>({
+  const { data: profile, isLoading: profileLoading } = useQuery<User & { followersCount: number; followingCount: number; postsCount: number; isFollowing: boolean; isSubscribed: boolean }>({
     queryKey: ["/api/users", username],
     enabled: !!username,
   });
@@ -81,7 +81,10 @@ export default function ProfilePage() {
           isCreator={profile.isCreator}
           subscriptionPrice={profile.subscriptionPrice || undefined}
           isOwnProfile={isOwnProfile}
+          isFollowing={profile.isFollowing}
+          isSubscribed={profile.isSubscribed}
           onEditProfile={() => setEditProfileModalOpen(true)}
+          onSubscribe={() => setSubscriptionModalOpen(true)}
         />
 
         <Tabs defaultValue="posts" className="px-6">

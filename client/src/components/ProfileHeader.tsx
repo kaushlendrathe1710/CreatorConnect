@@ -18,6 +18,7 @@ interface ProfileHeaderProps {
   subscriptionPrice?: number;
   isSubscribed?: boolean;
   onEditProfile?: () => void;
+  onSubscribe?: () => void;
 }
 
 export function ProfileHeader({
@@ -34,9 +35,9 @@ export function ProfileHeader({
   subscriptionPrice,
   isSubscribed: initialSubscribed = false,
   onEditProfile,
+  onSubscribe,
 }: ProfileHeaderProps) {
   const [isFollowing, setIsFollowing] = useState(initialFollowing);
-  const [isSubscribed, setIsSubscribed] = useState(initialSubscribed);
   const [followerCount, setFollowerCount] = useState(followers);
 
   const handleFollow = () => {
@@ -113,11 +114,12 @@ export function ProfileHeader({
                 </Button>
                 {isCreator && subscriptionPrice && (
                   <Button
-                    variant={isSubscribed ? "outline" : "default"}
-                    onClick={() => setIsSubscribed(!isSubscribed)}
+                    variant={initialSubscribed ? "outline" : "default"}
+                    onClick={initialSubscribed ? undefined : onSubscribe}
+                    disabled={initialSubscribed}
                     data-testid="button-subscribe"
                   >
-                    {isSubscribed ? "Subscribed" : `Subscribe $${(subscriptionPrice / 100).toFixed(2)}/mo`}
+                    {initialSubscribed ? "Subscribed" : `Subscribe $${(subscriptionPrice / 100).toFixed(2)}/mo`}
                   </Button>
                 )}
               </>
