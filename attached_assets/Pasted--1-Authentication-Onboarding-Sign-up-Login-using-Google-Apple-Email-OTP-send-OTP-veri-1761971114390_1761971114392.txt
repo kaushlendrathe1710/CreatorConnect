@@ -1,0 +1,143 @@
+🔐 1. Authentication & Onboarding
+
+Sign up / Login using:
+
+Google
+
+Apple
+
+Email OTP (send OTP → verify → login)
+
+Basic profile setup:
+
+Username (unique handle)
+
+Display name
+
+Profile photo
+
+Bio
+
+Switch to “Creator Mode” toggle to enable monetization
+
+KYC required for payouts (optional in MVP, can be manual approval later)
+
+👤 2. Profile Page
+
+Profile photo, name, username, bio
+
+Followers / Following count
+
+Subscription button (if creator mode ON)
+
+Posts grid view
+
+Link to social handles (Instagram/YouTube optional)
+
+“Edit Profile” option
+
+📸 3. Content Posting
+
+Upload images and videos (short clips under X MB)
+
+Add caption and hashtags
+
+Choose visibility:
+
+Public (free for all)
+
+Subscribers only
+
+Delete/edit own post
+
+Basic post analytics: like count, view count
+
+🧭 4. Feed & Discovery
+
+Home Feed: Posts from followed creators
+
+Explore Feed: Random/public posts, trending tags
+
+Search: by username or hashtags
+
+Like, comment, share (in-app only)
+
+💰 5. Subscriptions
+
+Enable “Subscription Mode” (for creators)
+
+Create one subscription plan (simple — one price per month)
+
+Fans can:
+
+Tap “Subscribe”
+
+Pay via Razorpay / Stripe (monthly recurring)
+
+Unlock subscriber-only posts
+
+Auto renewal or manual renewal option
+
+Subscription management:
+
+Cancel or renew subscription
+
+See active subscriptions
+
+💬 6. Interaction
+
+Like / Comment on posts
+
+Follow / Unfollow users
+
+View post likes/comments
+
+Basic notification (like/comment/subscription events)
+
+📊 7. Creator Dashboard (Simple)
+
+Total subscribers count
+
+Total earnings
+
+Month-wise earnings chart (optional basic version)
+
+Pending payouts
+
+⚙️ 8. Settings
+
+Edit profile
+
+Enable / disable creator mode
+
+Manage payment method
+
+Logout
+
+Notification preferences
+
+Delete/deactivate account
+
+🔒 9. Security & Privacy
+
+Email OTP / Google / Apple Login only
+
+Secure media storage (signed URLs)
+
+Block / report users
+
+Basic moderation for flagged posts
+
+Privacy: who can comment/follow
+
+🧑‍💼 10. Admin Panel (Light Version)
+
+View all users
+
+View posts
+
+Approve creators (optional toggle)
+
+Remove reported content
+
+View basic metrics (total users, posts, subscriptions, revenue)
