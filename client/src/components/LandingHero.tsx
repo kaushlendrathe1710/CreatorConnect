@@ -2,6 +2,10 @@ import { Button } from "@/components/ui/button";
 import heroImage from "@assets/generated_images/Hero_creators_in_studio_b6bf1707.png";
 
 export function LandingHero() {
+  const handleLogin = () => {
+    window.location.href = "/api/login";
+  };
+
   return (
     <section className="relative h-[85vh] flex items-center justify-center overflow-hidden">
       <div
@@ -22,6 +26,7 @@ export function LandingHero() {
             size="lg"
             variant="default"
             className="text-lg px-8"
+            onClick={handleLogin}
             data-testid="button-start-creating"
           >
             Start Creating
@@ -30,6 +35,7 @@ export function LandingHero() {
             size="lg"
             variant="outline"
             className="text-lg px-8 bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20"
+            onClick={handleLogin}
             data-testid="button-explore-creators"
           >
             Explore Creators

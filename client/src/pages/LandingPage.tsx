@@ -1,16 +1,16 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { LandingHero } from "@/components/LandingHero";
 import { HowItWorks } from "@/components/HowItWorks";
 import { FeatureShowcase } from "@/components/FeatureShowcase";
 import { SearchBar } from "@/components/SearchBar";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { AuthModal } from "@/components/AuthModal";
 import analyticsImage from "@assets/generated_images/Creator_reviewing_analytics_dashboard_dd86db70.png";
 import communityImage from "@assets/generated_images/Community_using_mobile_devices_6265481d.png";
 
 export default function LandingPage() {
-  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const handleLogin = () => {
+    window.location.href = "/api/login";
+  };
 
   return (
     <div className="min-h-screen">
@@ -25,13 +25,13 @@ export default function LandingPage() {
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
-              onClick={() => setAuthModalOpen(true)}
+              onClick={handleLogin}
               data-testid="button-login"
             >
               Log In
             </Button>
             <Button
-              onClick={() => setAuthModalOpen(true)}
+              onClick={handleLogin}
               data-testid="button-signup"
             >
               Sign Up
@@ -107,7 +107,7 @@ export default function LandingPage() {
                 <p className="text-lg text-muted-foreground mb-6">
                   Connect with thousands of creators and fans. Share your passion, build your audience, and create meaningful connections.
                 </p>
-                <Button size="lg" onClick={() => setAuthModalOpen(true)} data-testid="button-get-started">
+                <Button size="lg" onClick={handleLogin} data-testid="button-get-started">
                   Get Started Free
                 </Button>
               </div>
@@ -125,7 +125,7 @@ export default function LandingPage() {
             </p>
             <Button
               size="lg"
-              onClick={() => setAuthModalOpen(true)}
+              onClick={handleLogin}
               className="text-lg px-12"
               data-testid="button-join-now"
             >
@@ -172,8 +172,6 @@ export default function LandingPage() {
           </div>
         </footer>
       </main>
-
-      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
     </div>
   );
 }

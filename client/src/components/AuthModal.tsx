@@ -1,9 +1,6 @@
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+// Reference: javascript_log_in_with_replit blueprint - Using Replit Auth for authentication
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { SiGoogle, SiApple } from "react-icons/si";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -11,18 +8,9 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ isOpen, onClose }: AuthModalProps) {
-  const [email, setEmail] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState("");
-
-  const handleSendOtp = () => {
-    console.log("Send OTP to:", email);
-    setOtpSent(true);
-  };
-
-  const handleVerifyOtp = () => {
-    console.log("Verify OTP:", otp);
-    onClose();
+  const handleLogin = () => {
+    // Redirect to Replit Auth login endpoint
+    window.location.href = "/api/login";
   };
 
   return (
@@ -30,102 +18,29 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-2xl text-center">
-            {otpSent ? "Enter Verification Code" : "Welcome to CreatorHub"}
+            Welcome to CreatorHub
           </DialogTitle>
+          <DialogDescription className="text-center">
+            Sign in to start creating and earning
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          {!otpSent ? (
-            <>
-              <div className="space-y-3">
-                <Button
-                  variant="outline"
-                  className="w-full h-11"
-                  data-testid="button-google-login"
-                  onClick={() => console.log("Google login")}
-                >
-                  <SiGoogle className="w-5 h-5 mr-2" />
-                  Continue with Google
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full h-11"
-                  data-testid="button-apple-login"
-                  onClick={() => console.log("Apple login")}
-                >
-                  <SiApple className="w-5 h-5 mr-2" />
-                  Continue with Apple
-                </Button>
-              </div>
+          <p className="text-sm text-center text-muted-foreground">
+            Sign in with Google, Apple, GitHub, or email
+          </p>
 
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">Or</span>
-                </div>
-              </div>
+          <Button
+            className="w-full h-11"
+            onClick={handleLogin}
+            data-testid="button-login"
+          >
+            Continue to Sign In
+          </Button>
 
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  data-testid="input-email"
-                />
-              </div>
-
-              <Button
-                className="w-full"
-                onClick={handleSendOtp}
-                disabled={!email}
-                data-testid="button-send-otp"
-              >
-                Send Verification Code
-              </Button>
-            </>
-          ) : (
-            <>
-              <p className="text-sm text-muted-foreground text-center">
-                We sent a code to {email}
-              </p>
-              
-              <div className="space-y-2">
-                <Label htmlFor="otp">Verification Code</Label>
-                <Input
-                  id="otp"
-                  type="text"
-                  placeholder="Enter 6-digit code"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  maxLength={6}
-                  data-testid="input-otp"
-                />
-              </div>
-
-              <Button
-                className="w-full"
-                onClick={handleVerifyOtp}
-                disabled={otp.length !== 6}
-                data-testid="button-verify-otp"
-              >
-                Verify & Continue
-              </Button>
-
-              <Button
-                variant="ghost"
-                className="w-full"
-                onClick={() => setOtpSent(false)}
-                data-testid="button-back"
-              >
-                Back
-              </Button>
-            </>
-          )}
+          <p className="text-xs text-center text-muted-foreground">
+            By continuing, you agree to our Terms of Service and Privacy Policy
+          </p>
         </div>
       </DialogContent>
     </Dialog>
