@@ -13,11 +13,18 @@ CreatorHub is a subscription-based social media platform that enables creators t
 - Improved visual hierarchy with better spacing, cards with hover effects, and numbered steps
 - Clearer call-to-action buttons for both "Start Creating" and "Explore Creators"
 
-**Authentication Flow Updates**: Streamlined Email OTP authentication with first-time user onboarding:
-- Single "Log In" button (removed "Sign Up") - all users use the same entry point
-- Email OTP authentication via Replit Auth for all users
-- First-time users automatically redirected to onboarding page to complete profile (name and mobile number)
-- Returning users with completed profiles automatically redirected to feed/dashboard
+**Email OTP Authentication System**: Custom email verification with Nodemailer integration:
+- Single "Log In" button - all users use the same entry point
+- Two-step authentication process:
+  1. **Email Entry**: User enters email address
+  2. **OTP Verification**: 6-digit code sent to email, expires in 10 minutes
+- Email features:
+  - Professional branded OTP emails via SMTP
+  - Resend OTP functionality
+  - Maximum 5 verification attempts per code
+  - Auto-cleanup of expired codes
+- **First-time users**: Automatically redirected to onboarding page (name + mobile number)
+- **Returning users**: Automatically redirected to feed/dashboard
 - Mobile number field added to user schema for enhanced user profiles
 
 ## User Preferences

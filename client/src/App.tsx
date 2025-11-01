@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { useAuth } from "@/hooks/useAuth";
 import LandingPage from "@/pages/LandingPage";
+import LoginPage from "@/pages/LoginPage";
 import OnboardingPage from "@/pages/OnboardingPage";
 import FeedPage from "@/pages/FeedPage";
 import ProfilePage from "@/pages/ProfilePage";
@@ -17,11 +18,12 @@ import NotFound from "@/pages/not-found";
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();
 
-  // Show landing page while loading or not authenticated
+  // Show landing page and login page for unauthenticated users
   if (isLoading || !isAuthenticated) {
     return (
       <Switch>
         <Route path="/" component={LandingPage} />
+        <Route path="/login" component={LoginPage} />
         <Route component={LandingPage} />
       </Switch>
     );

@@ -9,7 +9,7 @@ import communityImage from "@assets/generated_images/Community_using_mobile_devi
 
 export default function LandingPage() {
   const handleLogin = () => {
-    window.location.href = "/api/login";
+    window.location.href = "/login";
   };
 
   return (
