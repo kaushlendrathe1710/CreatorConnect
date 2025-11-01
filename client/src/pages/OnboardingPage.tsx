@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 
 const onboardingSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -70,8 +70,35 @@ export default function OnboardingPage() {
     },
   });
 
+  const { mutate: logout, isPending: isLoggingOut } = useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+      });
+      if (!response.ok) {
+        throw new Error("Failed to logout");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      window.location.href = "/";
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to logout",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = (data: OnboardingForm) => {
     completeOnboarding(data);
+  };
+
+  const handleLogout = () => {
+    logout();
   };
 
   return (
@@ -145,11 +172,27 @@ export default function OnboardingPage() {
                 type="submit"
                 className="w-full"
                 size="lg"
-                disabled={isPending}
+                disabled={isPending || isLoggingOut}
                 data-testid="button-complete-onboarding"
               >
                 {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Get Started
+              </Button>
+
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full"
+                onClick={handleLogout}
+                disabled={isPending || isLoggingOut}
+                data-testid="button-logout"
+              >
+                {isLoggingOut ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                )}
+                Back to Home
               </Button>
             </form>
           </Form>
