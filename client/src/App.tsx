@@ -10,6 +10,9 @@ import LandingPage from "@/pages/LandingPage";
 import LoginPage from "@/pages/LoginPage";
 import OnboardingPage from "@/pages/OnboardingPage";
 import FeedPage from "@/pages/FeedPage";
+import SearchPage from "@/pages/SearchPage";
+import ExplorePage from "@/pages/ExplorePage";
+import MessagesPage from "@/pages/MessagesPage";
 import ProfilePage from "@/pages/ProfilePage";
 import DashboardPage from "@/pages/DashboardPage";
 import NotificationsPage from "@/pages/NotificationsPage";
@@ -44,6 +47,9 @@ function Router() {
         <>
           <Route path="/" component={FeedPage} />
           <Route path="/feed" component={FeedPage} />
+          <Route path="/search" component={SearchPage} />
+          <Route path="/explore" component={ExplorePage} />
+          <Route path="/messages" component={MessagesPage} />
           <Route path="/profile/:username" component={ProfilePage} />
           <Route path="/dashboard" component={DashboardPage} />
           <Route path="/notifications" component={NotificationsPage} />
