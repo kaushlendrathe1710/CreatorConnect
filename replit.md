@@ -17,6 +17,7 @@ CreatorHub is a subscription-based social media platform that enables creators t
 - **Mobile Navigation**: Bottom nav bar with Home, Create, Notifications, Profile buttons
 - **Critical Bug Fix**: Subscription prices stored in cents, now properly converted to dollars before display using `(priceInCents / 100).toFixed(2)`
 - **Navigation Enhancement**: Avatar in header and profile button in mobile nav now navigate to /dashboard
+- **Default Landing Page**: After email OTP authentication, users are now redirected directly to their dashboard (/) instead of the feed
 
 **Landing Page Redesign**: Completely redesigned the landing page to appeal to both creators and fans with an Instagram-inspired modern aesthetic:
 - Enhanced hero section with bold "Create. Share. Earn." messaging and social proof (10K+ creators, 500K+ subscribers stats)
