@@ -6,6 +6,7 @@ import { ProfileHeader } from "@/components/ProfileHeader";
 import { SubscriptionModal } from "@/components/SubscriptionModal";
 import { EditProfileModal } from "@/components/EditProfileModal";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { NotificationBell } from "@/components/NotificationBell";
 import { ArrowLeft, Grid, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -65,7 +66,10 @@ export default function ProfilePage() {
           
           <h2 className="font-semibold">{profile.username || profile.firstName}</h2>
           
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <NotificationBell />
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 

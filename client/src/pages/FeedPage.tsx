@@ -2,6 +2,7 @@ import { Home, Compass, PlusSquare, Bell, User } from "lucide-react";
 import { PostCard } from "@/components/PostCard";
 import { SearchBar } from "@/components/SearchBar";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { NotificationBell } from "@/components/NotificationBell";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { CreatePostModal } from "@/components/CreatePostModal";
@@ -28,9 +29,7 @@ export default function FeedPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" data-testid="button-notifications">
-              <Bell className="w-5 h-5" />
-            </Button>
+            <NotificationBell />
             <ThemeToggle />
             <Avatar className="w-8 h-8 cursor-pointer">
               <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" />
@@ -97,9 +96,7 @@ export default function FeedPage() {
         >
           <PlusSquare className="w-6 h-6" />
         </Button>
-        <Button variant="ghost" size="icon" data-testid="button-nav-notifications">
-          <Bell className="w-6 h-6" />
-        </Button>
+        <NotificationBell />
         <Button variant="ghost" size="icon" data-testid="button-nav-profile">
           <User className="w-6 h-6" />
         </Button>
