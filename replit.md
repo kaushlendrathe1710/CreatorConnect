@@ -6,7 +6,24 @@ CreatorHub is a subscription-based social media platform that enables creators t
 
 ## Recent Updates (November 2025)
 
-**Instagram-Style Dashboard Redesign**: Complete overhaul of the dashboard to replicate Instagram's profile design:
+**Instagram-Style Application Layout**: Complete redesign to match Instagram's layout with three-panel design:
+- **Left Sidebar Navigation** (desktop):
+  - CreatorHub logo
+  - Navigation menu: Home, Search, Explore, Messages, Notifications, Create, Profile
+  - Large, clickable buttons with icons and labels
+- **Center Feed Area**:
+  - Main content area with post cards
+  - Clean feed layout matching Instagram's design
+  - Empty state for no posts
+- **Right Sidebar** (desktop):
+  - Current user profile card with avatar, username, and "Switch" button
+  - "Suggested for you" section with Follow buttons
+  - User recommendations with avatars and usernames
+  - Footer links (About, Help, Press, API, Jobs, Privacy, Terms)
+- **API Enhancement**: Added `/api/users/suggested` endpoint for user recommendations
+- **Default Landing Page**: After email OTP authentication, users land on the Instagram-style feed
+
+**Instagram-Style Profile Dashboard**: Profile page with Instagram-replica design:
 - **Profile Header**: Large avatar (w-32 to w-40), username, stats display (Posts/Followers/Following)
 - **Bio Section**: User bio, creator badge, subscription pricing (properly formatted: $9.99/month not $999/month)
 - **Action Buttons**: Edit Profile (opens modal), Share Profile, Settings with modern hover effects
@@ -14,10 +31,7 @@ CreatorHub is a subscription-based social media platform that enables creators t
   - Posts: 3-column grid layout with hover effects showing likes/comments overlay
   - Analytics (creators only): Cards showing Total Subscribers, Monthly Revenue, Engagement Rate
   - About: User details (email, phone, account type) with logout button
-- **Mobile Navigation**: Bottom nav bar with Home, Create, Notifications, Profile buttons
 - **Critical Bug Fix**: Subscription prices stored in cents, now properly converted to dollars before display using `(priceInCents / 100).toFixed(2)`
-- **Navigation Enhancement**: Avatar in header and profile button in mobile nav now navigate to /dashboard
-- **Default Landing Page**: After email OTP authentication, users are now redirected directly to their dashboard (/) instead of the feed
 
 **Landing Page Redesign**: Completely redesigned the landing page to appeal to both creators and fans with an Instagram-inspired modern aesthetic:
 - Enhanced hero section with bold "Create. Share. Earn." messaging and social proof (10K+ creators, 500K+ subscribers stats)
