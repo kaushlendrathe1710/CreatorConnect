@@ -2,22 +2,27 @@ import { Heart, MessageCircle, Share2, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { CommentsSection } from "@/components/CommentsSection";
 import { useState } from "react";
 
 interface PostCardProps {
+  postId: number;
   username: string;
   displayName: string;
   avatarUrl?: string;
-  imageUrl: string;
+  imageUrl?: string;
   caption: string;
   likes: number;
   comments: number;
   timestamp: string;
   isSubscriberOnly?: boolean;
   isCreator?: boolean;
+  hasLiked?: boolean;
+  canView?: boolean;
 }
 
 export function PostCard({
+  postId,
   username,
   displayName,
   avatarUrl,
@@ -28,13 +33,27 @@ export function PostCard({
   timestamp,
   isSubscriberOnly = false,
   isCreator = false,
+  hasLiked = false,
+  canView = true,
 }: PostCardProps) {
-  const [isLiked, setIsLiked] = useState(false);
+  const [isLiked, setIsLiked] = useState(hasLiked);
   const [likeCount, setLikeCount] = useState(likes);
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
+  const handleLike = async () => {
+    try {
+      const method = isLiked ? "DELETE" : "POST";
+      const response = await fetch(`/api/posts/${postId}/like`, {
+        method,
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        setIsLiked(!isLiked);
+        setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
+      }
+    } catch (error) {
+      console.error("Error toggling like:", error);
+    }
   };
 
   return (
@@ -59,21 +78,23 @@ export function PostCard({
         </div>
       </div>
 
-      <div className="relative">
-        <img
-          src={imageUrl}
-          alt="Post content"
-          className="w-full aspect-square object-cover"
-        />
-        {isSubscriberOnly && (
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center">
-            <div className="text-center text-white">
-              <Lock className="w-12 h-12 mx-auto mb-2" />
-              <p className="text-sm font-medium">Subscribe to view</p>
+      {imageUrl && (
+        <div className="relative">
+          <img
+            src={imageUrl}
+            alt="Post content"
+            className="w-full aspect-square object-cover"
+          />
+          {isSubscriberOnly && !canView && (
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+              <div className="text-center text-white">
+                <Lock className="w-12 h-12 mx-auto mb-2" />
+                <p className="text-sm font-medium">Subscribe to view</p>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       <div className="p-4 space-y-3">
         <div className="flex items-center gap-4">
@@ -103,9 +124,7 @@ export function PostCard({
           </p>
         </div>
 
-        <button className="text-sm text-muted-foreground hover:text-foreground">
-          View all {comments} comments
-        </button>
+        {canView && <CommentsSection postId={postId} initialCount={comments} />}
 
         <p className="text-xs text-muted-foreground">{timestamp}</p>
       </div>

@@ -61,27 +61,19 @@ export function CreatePostModal({ open, onOpenChange }: CreatePostModalProps) {
 
   const handleUploadComplete = async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
     if (result.successful && result.successful.length > 0) {
-      const uploadedURL = result.successful[0].uploadURL;
+      const uploadedURL = result.successful[0].uploadURL || "";
       
-      // Set ACL policy for the uploaded media
-      const response = await apiRequest("PUT", "/api/objects/media", {
-        mediaURL: uploadedURL,
-        isPublic: !isSubscriberOnly,
-      });
-
-      const data = await response.json();
-      const objectPath = data.objectPath || "";
-      setMediaURL(objectPath);
-      // Use the object path for preview (it will be served via /objects/:path route)
-      setMediaPreview(objectPath);
+      // Store the raw upload URL - we'll set ACL when post is submitted
+      setMediaURL(uploadedURL);
+      setMediaPreview(uploadedURL);
       toast({
         title: "Upload complete",
-        description: "Your image has been uploaded successfully.",
+        description: "Your image has been uploaded successfully. ACL will be set when you post.",
       });
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!caption.trim() && !mediaURL) {
       toast({
         title: "Error",
@@ -91,9 +83,32 @@ export function CreatePostModal({ open, onOpenChange }: CreatePostModalProps) {
       return;
     }
 
+    let finalMediaURL = mediaURL;
+
+    // Set ACL policy for uploaded media if there is one
+    if (mediaURL) {
+      try {
+        const response = await apiRequest("PUT", "/api/objects/media", {
+          mediaURL: mediaURL,
+          isPublic: !isSubscriberOnly,
+        });
+
+        const data = await response.json();
+        finalMediaURL = data.objectPath || mediaURL;
+      } catch (error) {
+        console.error("Error setting media ACL:", error);
+        toast({
+          title: "Error",
+          description: "Failed to set media permissions. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     createPostMutation.mutate({
       caption: caption.trim(),
-      mediaURL: mediaURL || undefined,
+      mediaURL: finalMediaURL || undefined,
       isSubscriberOnly,
     });
   };

@@ -4,48 +4,19 @@ import { SearchBar } from "@/components/SearchBar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-
-const mockPosts = [
-  {
-    id: 1,
-    username: "sarahcreates",
-    displayName: "Sarah Creates",
-    avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-    imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800",
-    caption: "New collection dropping soon! 🎨✨",
-    likes: 1234,
-    comments: 56,
-    timestamp: "2 hours ago",
-    isCreator: true,
-  },
-  {
-    id: 2,
-    username: "mikephoto",
-    displayName: "Mike Photography",
-    avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mike",
-    imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800",
-    caption: "Golden hour magic ✨📸",
-    likes: 892,
-    comments: 34,
-    timestamp: "5 hours ago",
-    isCreator: true,
-    isSubscriberOnly: true,
-  },
-  {
-    id: 3,
-    username: "alexfitness",
-    displayName: "Alex Fitness",
-    avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex",
-    imageUrl: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800",
-    caption: "Morning workout complete! 💪 Who's training today?",
-    likes: 2341,
-    comments: 128,
-    timestamp: "1 day ago",
-    isCreator: true,
-  },
-];
+import { CreatePostModal } from "@/components/CreatePostModal";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { formatDistanceToNow } from "date-fns";
 
 export default function FeedPage() {
+  const [showCreatePost, setShowCreatePost] = useState(false);
+  const { user } = useAuth();
+
+  const { data: posts = [], isLoading } = useQuery<any[]>({
+    queryKey: ["/api/posts/feed"],
+  });
   return (
     <div className="min-h-screen pb-16 md:pb-0">
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b">
@@ -74,12 +45,42 @@ export default function FeedPage() {
           <SearchBar />
         </div>
 
-        <div className="space-y-8">
-          {mockPosts.map((post) => (
-            <PostCard key={post.id} {...post} />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">Loading feed...</p>
+          </div>
+        ) : posts.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground mb-4">No posts yet. Start following creators!</p>
+            <Button onClick={() => setShowCreatePost(true)} data-testid="button-create-first-post">
+              Create your first post
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {posts.map((post) => (
+              <PostCard
+                key={post.id}
+                postId={post.id}
+                username={post.user?.username || ""}
+                displayName={`${post.user?.firstName || ""} ${post.user?.lastName || ""}`.trim() || post.user?.username || ""}
+                avatarUrl={post.user?.avatarUrl}
+                imageUrl={post.mediaURL}
+                caption={post.caption}
+                likes={post.likesCount || 0}
+                comments={post.commentsCount || 0}
+                timestamp={formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+                isSubscriberOnly={post.isSubscriberOnly}
+                isCreator={post.user?.isCreator}
+                hasLiked={post.hasLiked}
+                canView={post.canView !== false}
+              />
+            ))}
+          </div>
+        )}
       </main>
+
+      <CreatePostModal open={showCreatePost} onOpenChange={setShowCreatePost} />
 
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t h-16 flex items-center justify-around z-50">
         <Button variant="ghost" size="icon" data-testid="button-nav-home">
@@ -88,7 +89,12 @@ export default function FeedPage() {
         <Button variant="ghost" size="icon" data-testid="button-nav-explore">
           <Compass className="w-6 h-6" />
         </Button>
-        <Button variant="ghost" size="icon" data-testid="button-nav-create">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={() => setShowCreatePost(true)}
+          data-testid="button-nav-create"
+        >
           <PlusSquare className="w-6 h-6" />
         </Button>
         <Button variant="ghost" size="icon" data-testid="button-nav-notifications">

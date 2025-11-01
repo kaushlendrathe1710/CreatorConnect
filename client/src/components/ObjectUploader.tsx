@@ -4,8 +4,6 @@ import Uppy from "@uppy/core";
 import type { UploadResult } from "@uppy/core";
 import AwsS3 from "@uppy/aws-s3";
 import Dashboard from "@uppy/dashboard";
-import "@uppy/core/dist/style.min.css";
-import "@uppy/dashboard/dist/style.min.css";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 

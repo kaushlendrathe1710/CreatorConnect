@@ -403,6 +403,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ===== COMMENT ROUTES =====
+  // Get comments for a post (requires authorization for subscriber-only posts)
+  app.get("/api/posts/:id/comments", async (req: any, res) => {
+    try {
+      const postId = req.params.id;
+      const post = await storage.getPost(postId);
+
+      if (!post) {
+        return res.status(404).json({ message: "Post not found" });
+      }
+
+      // Check if user can view subscriber-only content
+      if (post.isSubscriberOnly) {
+        // Must be authenticated to view subscriber-only comments
+        if (!req.isAuthenticated || !req.isAuthenticated()) {
+          return res.status(401).json({ message: "Authentication required" });
+        }
+
+        const userId = req.user.claims.sub;
+
+        // Owner or active subscriber can view
+        if (post.userId !== userId) {
+          const hasSubscription = await storage.hasActiveSubscription(userId, post.userId);
+          if (!hasSubscription) {
+            return res.status(403).json({ message: "Subscription required" });
+          }
+        }
+      }
+
+      const comments = await storage.getCommentsByPost(postId);
+
+      // Enrich comments with user data
+      const enrichedComments = await Promise.all(
+        comments.map(async (comment) => {
+          const user = await storage.getUser(comment.userId);
+          return { ...comment, user };
+        })
+      );
+
+      res.json(enrichedComments);
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+      res.status(500).json({ message: "Failed to fetch comments" });
+    }
+  });
+
+  // Create a comment
   app.post("/api/posts/:id/comments", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -434,24 +480,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating comment:", error);
       res.status(400).json({ message: "Failed to create comment" });
-    }
-  });
-
-  app.get("/api/posts/:id/comments", async (req, res) => {
-    try {
-      const comments = await storage.getCommentsByPost(req.params.id);
-      
-      const enrichedComments = await Promise.all(
-        comments.map(async (comment) => {
-          const user = await storage.getUser(comment.userId);
-          return { ...comment, user };
-        })
-      );
-
-      res.json(enrichedComments);
-    } catch (error) {
-      console.error("Error fetching comments:", error);
-      res.status(500).json({ message: "Failed to fetch comments" });
     }
   });
 
