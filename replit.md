@@ -4,6 +4,15 @@
 
 CreatorHub is a subscription-based social media platform that enables creators to monetize their content through monthly subscriptions. The platform combines Instagram's visual-first feed design with Patreon's creator monetization model, allowing creators to share exclusive content with subscribers while building a loyal community. Users can browse public posts, follow creators, and subscribe to access premium subscriber-only content.
 
+## Recent Updates (November 2025)
+
+**Landing Page Redesign**: Completely redesigned the landing page to appeal to both creators and fans with an Instagram-inspired modern aesthetic:
+- Enhanced hero section with bold "Create. Share. Earn." messaging and social proof (10K+ creators, 500K+ subscribers stats)
+- Dual-audience "How It Works" section with tabs for Creators and Fans, showing step-by-step processes for each audience
+- "Built for Everyone" feature showcase with separate sections highlighting benefits for creators (analytics, payments, content control) and fans (discovery, premium access, engagement)
+- Improved visual hierarchy with better spacing, cards with hover effects, and numbered steps
+- Clearer call-to-action buttons for both "Start Creating" and "Explore Creators"
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
