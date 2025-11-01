@@ -6,6 +6,18 @@ CreatorHub is a subscription-based social media platform that enables creators t
 
 ## Recent Updates (November 2025)
 
+**Instagram-Style Dashboard Redesign**: Complete overhaul of the dashboard to replicate Instagram's profile design:
+- **Profile Header**: Large avatar (w-32 to w-40), username, stats display (Posts/Followers/Following)
+- **Bio Section**: User bio, creator badge, subscription pricing (properly formatted: $9.99/month not $999/month)
+- **Action Buttons**: Edit Profile (opens modal), Share Profile, Settings with modern hover effects
+- **Tabbed Interface**: 
+  - Posts: 3-column grid layout with hover effects showing likes/comments overlay
+  - Analytics (creators only): Cards showing Total Subscribers, Monthly Revenue, Engagement Rate
+  - About: User details (email, phone, account type) with logout button
+- **Mobile Navigation**: Bottom nav bar with Home, Create, Notifications, Profile buttons
+- **Critical Bug Fix**: Subscription prices stored in cents, now properly converted to dollars before display using `(priceInCents / 100).toFixed(2)`
+- **Navigation Enhancement**: Avatar in header and profile button in mobile nav now navigate to /dashboard
+
 **Landing Page Redesign**: Completely redesigned the landing page to appeal to both creators and fans with an Instagram-inspired modern aesthetic:
 - Enhanced hero section with bold "Create. Share. Earn." messaging and social proof (10K+ creators, 500K+ subscribers stats)
 - Dual-audience "How It Works" section with tabs for Creators and Fans, showing step-by-step processes for each audience

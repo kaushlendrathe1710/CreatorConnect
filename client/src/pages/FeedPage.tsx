@@ -10,10 +10,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { formatDistanceToNow } from "date-fns";
+import { useLocation } from "wouter";
 
 export default function FeedPage() {
   const [showCreatePost, setShowCreatePost] = useState(false);
   const { user } = useAuth();
+  const [, setLocation] = useLocation();
 
   const { data: posts = [], isLoading } = useQuery<any[]>({
     queryKey: ["/api/posts/feed"],
@@ -31,9 +33,13 @@ export default function FeedPage() {
           <div className="flex items-center gap-2">
             <NotificationBell />
             <ThemeToggle />
-            <Avatar className="w-8 h-8 cursor-pointer">
-              <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=User" />
-              <AvatarFallback>U</AvatarFallback>
+            <Avatar 
+              className="w-8 h-8 cursor-pointer" 
+              onClick={() => setLocation("/dashboard")}
+              data-testid="button-avatar-profile"
+            >
+              <AvatarImage src={user?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`} />
+              <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
             </Avatar>
           </div>
         </div>
@@ -97,7 +103,12 @@ export default function FeedPage() {
           <PlusSquare className="w-6 h-6" />
         </Button>
         <NotificationBell />
-        <Button variant="ghost" size="icon" data-testid="button-nav-profile">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={() => setLocation("/dashboard")}
+          data-testid="button-nav-profile"
+        >
           <User className="w-6 h-6" />
         </Button>
       </nav>
