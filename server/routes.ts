@@ -706,6 +706,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/dashboard/subscribers", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+
+      if (!user?.isCreator) {
+        return res.status(403).json({ message: "Not a creator" });
+      }
+
+      const subscriptions = await storage.getSubscriptionsByCreator(userId);
+
+      // Enrich with subscriber user data
+      const enrichedSubscriptions = await Promise.all(
+        subscriptions.map(async (sub) => {
+          const subscriber = await storage.getUser(sub.subscriberId);
+          return { ...sub, subscriber };
+        })
+      );
+
+      res.json(enrichedSubscriptions);
+    } catch (error) {
+      console.error("Error fetching subscribers:", error);
+      res.status(500).json({ message: "Failed to fetch subscribers" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

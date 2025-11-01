@@ -32,7 +32,7 @@ export default function ProfilePage() {
     enabled: !!username,
   });
 
-  const isOwnProfile = !!(currentUser && profile && currentUser.id === profile.id);
+  const isOwnProfile = !!(currentUser && profile && (currentUser as any).id === profile.id);
 
   if (profileLoading) {
     return (
