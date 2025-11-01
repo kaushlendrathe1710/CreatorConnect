@@ -6,6 +6,8 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertPostSchema, insertCommentSchema } from "@shared/schema";
 import Stripe from "stripe";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import { otpService } from "./otpService";
+import { emailService } from "./emailService";
 
 // Initialize Stripe if keys are provided
 let stripe: Stripe | null = null;
@@ -16,6 +18,114 @@ if (process.env.STRIPE_SECRET_KEY) {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
   await setupAuth(app);
+
+  // Verify SMTP connection on startup
+  emailService.verifyConnection();
+
+  // ===== EMAIL OTP ROUTES =====
+  // Request OTP to be sent to email
+  app.post("/api/auth/otp/request", async (req, res) => {
+    try {
+      const { email } = req.body;
+
+      if (!email || !email.includes("@")) {
+        return res.status(400).json({ message: "Valid email is required" });
+      }
+
+      const result = await otpService.sendOTP(email);
+
+      if (!result.success) {
+        return res.status(500).json({ message: result.message });
+      }
+
+      res.json({ message: result.message });
+    } catch (error) {
+      console.error("Error requesting OTP:", error);
+      res.status(500).json({ message: "Failed to send OTP" });
+    }
+  });
+
+  // Verify OTP and create/login user
+  app.post("/api/auth/otp/verify", async (req: any, res) => {
+    try {
+      const { email, otp } = req.body;
+
+      if (!email || !otp) {
+        return res.status(400).json({ message: "Email and OTP are required" });
+      }
+
+      const result = otpService.verifyOTP(email, otp);
+
+      if (!result.success) {
+        return res.status(400).json({ message: result.message });
+      }
+
+      // OTP verified - get or create user
+      let user = await storage.getUserByEmail(email);
+
+      if (!user) {
+        // Create new user
+        const username = email.split("@")[0] + Math.floor(Math.random() * 1000);
+        user = await storage.createUser({
+          email,
+          username,
+          firstName: null,
+          lastName: null,
+          phoneNumber: null,
+          bio: null,
+          profileImageUrl: null,
+          isCreator: false,
+          subscriptionPrice: null,
+        });
+      }
+
+      // Create session
+      req.login({ claims: { sub: user.id, email: user.email } }, (err: any) => {
+        if (err) {
+          console.error("Error creating session:", err);
+          return res.status(500).json({ message: "Failed to create session" });
+        }
+
+        res.json({
+          message: "Login successful",
+          user: {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            phoneNumber: user.phoneNumber,
+            username: user.username,
+            isCreator: user.isCreator,
+          },
+        });
+      });
+    } catch (error) {
+      console.error("Error verifying OTP:", error);
+      res.status(500).json({ message: "Failed to verify OTP" });
+    }
+  });
+
+  // Resend OTP
+  app.post("/api/auth/otp/resend", async (req, res) => {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      const result = await otpService.resendOTP(email);
+
+      if (!result.success) {
+        return res.status(500).json({ message: result.message });
+      }
+
+      res.json({ message: result.message });
+    } catch (error) {
+      console.error("Error resending OTP:", error);
+      res.status(500).json({ message: "Failed to resend OTP" });
+    }
+  });
 
   // ===== OBJECT STORAGE ROUTES =====
   // Serve objects with ACL check (public objects don't require auth)

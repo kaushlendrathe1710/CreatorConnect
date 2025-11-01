@@ -88,6 +88,14 @@ SESSION_SECRET            # ✅ Already configured
 DEFAULT_OBJECT_STORAGE_BUCKET_ID  # ✅ Already configured
 ```
 
+### Required for Email OTP Authentication
+```bash
+SMTP_HOST                 # ⚠️ Add your SMTP server host
+SMTP_PORT                 # ⚠️ Add your SMTP server port (usually 587)
+SMTP_USER                 # ⚠️ Add your SMTP username/email
+SMTP_PASSWORD             # ⚠️ Add your SMTP password
+```
+
 ### Required for Payments
 ```bash
 STRIPE_SECRET_KEY         # ⚠️ Update with your key
