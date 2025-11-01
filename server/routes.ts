@@ -1,10 +1,11 @@
-// Reference: javascript_log_in_with_replit, javascript_stripe blueprints
+// Reference: javascript_log_in_with_replit, javascript_stripe, javascript_object_storage blueprints
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertPostSchema, insertCommentSchema } from "@shared/schema";
 import Stripe from "stripe";
+import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 
 // Initialize Stripe if keys are provided
 let stripe: Stripe | null = null;
@@ -15,6 +16,80 @@ if (process.env.STRIPE_SECRET_KEY) {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
   await setupAuth(app);
+
+  // ===== OBJECT STORAGE ROUTES =====
+  // Serve objects with ACL check (public objects don't require auth)
+  app.get("/objects/:objectPath(*)", async (req: any, res) => {
+    const userId = req.isAuthenticated?.() ? req.user?.claims?.sub : undefined;
+    const objectStorageService = new ObjectStorageService();
+    try {
+      const objectFile = await objectStorageService.getObjectEntityFile(req.path);
+      const canAccess = await objectStorageService.canAccessObjectEntity({
+        objectFile,
+        userId: userId,
+      });
+      if (!canAccess) {
+        return res.sendStatus(401);
+      }
+      objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error checking object access:", error);
+      if (error instanceof ObjectNotFoundError) {
+        return res.sendStatus(404);
+      }
+      return res.sendStatus(500);
+    }
+  });
+
+  // Get upload URL for object entity
+  app.post("/api/objects/upload", isAuthenticated, async (req, res) => {
+    const objectStorageService = new ObjectStorageService();
+    const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+    res.json({ uploadURL });
+  });
+
+  // Set ACL policy for uploaded media
+  app.put("/api/objects/media", isAuthenticated, async (req: any, res) => {
+    if (!req.body.mediaURL) {
+      return res.status(400).json({ error: "mediaURL is required" });
+    }
+
+    const userId = req.user.claims.sub;
+
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+        req.body.mediaURL,
+        {
+          owner: userId,
+          visibility: req.body.isPublic ? "public" : "private",
+        },
+      );
+
+      res.status(200).json({
+        objectPath: objectPath,
+      });
+    } catch (error) {
+      console.error("Error setting media ACL:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Serve public assets
+  app.get("/public-objects/:filePath(*)", async (req, res) => {
+    const filePath = req.params.filePath;
+    const objectStorageService = new ObjectStorageService();
+    try {
+      const file = await objectStorageService.searchPublicObject(filePath);
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      objectStorageService.downloadObject(file, res);
+    } catch (error) {
+      console.error("Error searching for public object:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
 
   // ===== AUTH ROUTES =====
   // Public endpoint to check auth status - returns user or null
