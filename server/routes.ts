@@ -81,30 +81,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update user profile - supports both /profile and /:id routes
   app.put("/api/users/profile", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const { username, bio, isCreator, subscriptionPrice } = req.body;
+      const { username, firstName, lastName, bio, isCreator, subscriptionPrice } = req.body;
 
-      // Validate subscription price for creators
+      // Validate subscription price for creators (already in cents from client)
       if (isCreator && subscriptionPrice) {
-        const priceInCents = Math.round(subscriptionPrice * 100);
-        if (priceInCents < 100) {
+        if (subscriptionPrice < 100) {
           return res.status(400).json({ message: "Subscription price must be at least $1.00" });
         }
       }
 
       const updated = await storage.updateUser(userId, {
         username,
+        firstName,
+        lastName,
         bio,
         isCreator,
-        subscriptionPrice: subscriptionPrice ? Math.round(subscriptionPrice * 100) : null,
+        subscriptionPrice: subscriptionPrice || null,
       });
 
       res.json(updated);
     } catch (error) {
       console.error("Error updating profile:", error);
       res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
+  // Also support updating via user ID
+  app.put("/api/users/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const targetUserId = req.params.id;
+
+      // Only allow users to update their own profile
+      if (userId !== targetUserId) {
+        return res.status(403).json({ message: "You can only update your own profile" });
+      }
+
+      const { username, firstName, lastName, bio, isCreator, subscriptionPrice } = req.body;
+
+      // Validate subscription price for creators (already in cents from client)
+      if (isCreator && subscriptionPrice) {
+        if (subscriptionPrice < 100) {
+          return res.status(400).json({ message: "Subscription price must be at least $1.00" });
+        }
+      }
+
+      const updated = await storage.updateUser(userId, {
+        username,
+        firstName,
+        lastName,
+        bio,
+        isCreator,
+        subscriptionPrice: subscriptionPrice || null,
+      });
+
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
+  // Get user posts by username
+  app.get("/api/users/:username/posts", async (req, res) => {
+    try {
+      const user = await storage.getUserByUsername(req.params.username);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const posts = await storage.getPostsByUser(user.id);
+      res.json(posts);
+    } catch (error) {
+      console.error("Error fetching user posts:", error);
+      res.status(500).json({ message: "Failed to fetch posts" });
     }
   });
 

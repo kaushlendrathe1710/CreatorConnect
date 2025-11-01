@@ -17,6 +17,7 @@ interface ProfileHeaderProps {
   isCreator?: boolean;
   subscriptionPrice?: number;
   isSubscribed?: boolean;
+  onEditProfile?: () => void;
 }
 
 export function ProfileHeader({
@@ -32,6 +33,7 @@ export function ProfileHeader({
   isCreator = false,
   subscriptionPrice,
   isSubscribed: initialSubscribed = false,
+  onEditProfile,
 }: ProfileHeaderProps) {
   const [isFollowing, setIsFollowing] = useState(initialFollowing);
   const [isSubscribed, setIsSubscribed] = useState(initialSubscribed);
@@ -82,7 +84,11 @@ export function ProfileHeader({
 
           <div className="flex flex-wrap gap-3">
             {isOwnProfile ? (
-              <Button variant="secondary" data-testid="button-edit-profile">
+              <Button 
+                variant="secondary" 
+                onClick={onEditProfile}
+                data-testid="button-edit-profile"
+              >
                 <Settings className="w-4 h-4 mr-2" />
                 Edit Profile
               </Button>
@@ -111,7 +117,7 @@ export function ProfileHeader({
                     onClick={() => setIsSubscribed(!isSubscribed)}
                     data-testid="button-subscribe"
                   >
-                    {isSubscribed ? "Subscribed" : `Subscribe $${subscriptionPrice}/mo`}
+                    {isSubscribed ? "Subscribed" : `Subscribe $${(subscriptionPrice / 100).toFixed(2)}/mo`}
                   </Button>
                 )}
               </>

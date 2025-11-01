@@ -10,6 +10,7 @@ interface SubscriptionModalProps {
   onClose: () => void;
   creatorName: string;
   price: number;
+  creatorId?: string;
 }
 
 export function SubscriptionModal({
@@ -17,9 +18,11 @@ export function SubscriptionModal({
   onClose,
   creatorName,
   price,
+  creatorId,
 }: SubscriptionModalProps) {
   const handleSubscribe = () => {
-    console.log("Subscribe to", creatorName);
+    // TODO: Implement subscription flow with Stripe
+    console.log("Subscribe to", creatorName, creatorId);
     onClose();
   };
 
