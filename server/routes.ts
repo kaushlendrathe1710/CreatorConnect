@@ -743,6 +743,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===== SEARCH ROUTES =====
+  app.get("/api/search/users", isAuthenticated, async (req, res) => {
+    try {
+      const query = req.query.q as string;
+      if (!query || query.trim().length === 0) {
+        return res.json([]);
+      }
+
+      const users = await storage.searchUsers(query);
+      
+      // Return sanitized user data
+      const sanitizedUsers = users.map(user => ({
+        id: user.id,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileImageUrl: user.profileImageUrl,
+        isCreator: user.isCreator,
+        bio: user.bio,
+      }));
+
+      res.json(sanitizedUsers);
+    } catch (error) {
+      console.error("Error searching users:", error);
+      res.status(500).json({ message: "Failed to search users" });
+    }
+  });
+
+  app.get("/api/search/hashtags", isAuthenticated, async (req, res) => {
+    try {
+      const query = req.query.q as string;
+      if (!query || query.trim().length === 0) {
+        return res.json([]);
+      }
+
+      const posts = await storage.searchPostsByHashtag(query);
+      res.json(posts);
+    } catch (error) {
+      console.error("Error searching hashtags:", error);
+      res.status(500).json({ message: "Failed to search hashtags" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

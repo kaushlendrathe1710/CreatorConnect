@@ -19,7 +19,7 @@ import {
   type Notification,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, sql, or, inArray } from "drizzle-orm";
+import { eq, desc, and, sql, or, inArray, ilike } from "drizzle-orm";
 
 export interface IStorage {
   // User operations - required for Replit Auth
@@ -75,6 +75,10 @@ export interface IStorage {
   getNotificationsByUser(userId: string, limit?: number): Promise<Notification[]>;
   markNotificationAsRead(id: string): Promise<void>;
   getUnreadCount(userId: string): Promise<number>;
+  
+  // Search operations
+  searchUsers(query: string, limit?: number): Promise<User[]>;
+  searchPostsByHashtag(hashtag: string, limit?: number): Promise<Post[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -400,6 +404,33 @@ export class DatabaseStorage implements IStorage {
       .from(notifications)
       .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
     return Number(result[0]?.count || 0);
+  }
+
+  // Search operations
+  async searchUsers(query: string, limit: number = 20): Promise<User[]> {
+    return db
+      .select()
+      .from(users)
+      .where(
+        or(
+          ilike(users.username, `%${query}%`),
+          ilike(users.firstName, `%${query}%`),
+          ilike(users.lastName, `%${query}%`)
+        )
+      )
+      .limit(limit);
+  }
+
+  async searchPostsByHashtag(hashtag: string, limit: number = 50): Promise<Post[]> {
+    // Remove # if present
+    const cleanHashtag = hashtag.startsWith('#') ? hashtag.slice(1) : hashtag;
+    
+    return db
+      .select()
+      .from(posts)
+      .where(sql`${posts.hashtags} @> ARRAY[${cleanHashtag}]::text[]`)
+      .orderBy(desc(posts.createdAt))
+      .limit(limit);
   }
 }
 
