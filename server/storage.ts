@@ -7,6 +7,17 @@ import {
   comments,
   subscriptions,
   notifications,
+  mediaAssets,
+  postMedia,
+  storySequences,
+  storyItems,
+  storyViews,
+  reels,
+  reelLikes,
+  reelComments,
+  conversations,
+  conversationParticipants,
+  messages,
   type User,
   type UpsertUser,
   type Post,
@@ -17,9 +28,27 @@ import {
   type Like,
   type Subscription,
   type Notification,
+  type MediaAsset,
+  type InsertMediaAsset,
+  type PostMedia,
+  type InsertPostMedia,
+  type StorySequence,
+  type InsertStorySequence,
+  type StoryItem,
+  type InsertStoryItem,
+  type Reel,
+  type InsertReel,
+  type ReelComment,
+  type InsertReelComment,
+  type Conversation,
+  type InsertConversation,
+  type ConversationParticipant,
+  type InsertConversationParticipant,
+  type Message,
+  type InsertMessage,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, sql, or, inArray, ilike } from "drizzle-orm";
+import { eq, desc, and, sql, or, inArray, ilike, gt, lt } from "drizzle-orm";
 
 export interface IStorage {
   // User operations - required for Replit Auth

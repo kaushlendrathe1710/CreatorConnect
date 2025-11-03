@@ -6,6 +6,18 @@ CreatorHub is a subscription-based social media platform that enables creators t
 
 ## Recent Updates (November 2025)
 
+**Instagram Critical Features Implementation** (In Progress):
+- **Database Schema**: Added comprehensive schema for 5 critical Instagram features:
+  1. **Stories**: 24-hour disappearing content with `story_sequences`, `story_items`, `story_views` tables
+  2. **Reels**: Short-form vertical videos with `reels`, `reel_likes`, `reel_comments` tables
+  3. **Direct Messages**: Real-time messaging with `conversations`, `conversation_participants`, `messages` tables
+  4. **Video Posts**: Video support via `media_assets` table with metadata (duration, dimensions, thumbnails)
+  5. **Carousel Posts**: Multiple media per post via `post_media` join table
+- **Media Infrastructure**: Shared `media_assets` table for all media types (images, videos) across posts, stories, reels, and messages
+- **Schema Quality**: All tables have proper indexes, foreign key constraints, unique constraints, and Drizzle ORM relations
+- **Posts Table Enhancement**: Added `mediaType` field, made `imageUrl` nullable for backward compatibility
+- **Backend Implementation**: (In Progress) Storage methods and API routes for all features
+
 **Admin Features & Dashboard**: Complete admin system with Instagram-style admin panel:
 - **Super Admin**: Hardcoded admin user (kaushlendra.k12@fms.edu) created on server startup
   - Cannot be deleted or demoted
