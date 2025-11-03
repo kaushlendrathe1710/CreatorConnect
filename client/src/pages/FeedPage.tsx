@@ -1,6 +1,7 @@
 import { PostCard } from "@/components/PostCard";
 import { Button } from "@/components/ui/button";
 import { InstagramLayout } from "@/components/InstagramLayout";
+import { StoriesRail } from "@/components/StoriesRail";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 
@@ -11,6 +12,9 @@ export default function FeedPage() {
 
   return (
     <InstagramLayout>
+      {/* Stories Rail at top */}
+      <StoriesRail />
+      
       {isLoading ? (
         <div className="text-center py-8">
           <p className="text-muted-foreground">Loading feed...</p>

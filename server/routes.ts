@@ -1175,6 +1175,283 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===== MEDIA ASSETS ROUTES =====
+  app.post("/api/media", isAuthenticated, async (req: any, res) => {
+    try {
+      const mediaAsset = await storage.createMediaAsset({
+        ...req.body,
+        userId: req.user.claims.sub,
+      });
+      res.json(mediaAsset);
+    } catch (error) {
+      console.error("Error creating media asset:", error);
+      res.status(500).json({ message: "Failed to create media asset" });
+    }
+  });
+
+  app.get("/api/media/:id", isAuthenticated, async (req, res) => {
+    try {
+      const asset = await storage.getMediaAsset(req.params.id);
+      if (!asset) {
+        return res.status(404).json({ message: "Media asset not found" });
+      }
+      res.json(asset);
+    } catch (error) {
+      console.error("Error fetching media asset:", error);
+      res.status(500).json({ message: "Failed to fetch media asset" });
+    }
+  });
+
+  // ===== STORIES ROUTES =====
+  app.post("/api/stories", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { mediaAssetId, caption, link } = req.body;
+      
+      let sequence = await storage.getUserStories(userId);
+      
+      if (!sequence) {
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        sequence = await storage.createStorySequence({
+          userId,
+          expiresAt,
+          isHighlight: false,
+          highlightTitle: null,
+        });
+      }
+      
+      const storyItem = await storage.createStoryItem({
+        sequenceId: sequence.id,
+        mediaAssetId,
+        caption: caption || null,
+        link: link || null,
+        orderIndex: sequence.items?.length || 0,
+      });
+      
+      res.json(storyItem);
+    } catch (error) {
+      console.error("Error creating story:", error);
+      res.status(500).json({ message: "Failed to create story" });
+    }
+  });
+
+  app.get("/api/stories/feed", isAuthenticated, async (req: any, res) => {
+    try {
+      const stories = await storage.getActiveStories(req.user.claims.sub);
+      res.json(stories);
+    } catch (error) {
+      console.error("Error fetching stories feed:", error);
+      res.status(500).json({ message: "Failed to fetch stories" });
+    }
+  });
+
+  app.get("/api/stories/:userId", isAuthenticated, async (req, res) => {
+    try {
+      const stories = await storage.getUserStories(req.params.userId);
+      res.json(stories || null);
+    } catch (error) {
+      console.error("Error fetching user stories:", error);
+      res.status(500).json({ message: "Failed to fetch user stories" });
+    }
+  });
+
+  app.delete("/api/stories/:storyId", isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteStory(req.params.storyId);
+      res.json({ message: "Story deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting story:", error);
+      res.status(500).json({ message: "Failed to delete story" });
+    }
+  });
+
+  app.post("/api/stories/:storyItemId/view", isAuthenticated, async (req: any, res) => {
+    try {
+      await storage.createStoryView(req.params.storyItemId, req.user.claims.sub);
+      res.json({ message: "Story view recorded" });
+    } catch (error) {
+      console.error("Error recording story view:", error);
+      res.status(500).json({ message: "Failed to record view" });
+    }
+  });
+
+  // ===== REELS ROUTES =====
+  app.post("/api/reels", isAuthenticated, async (req: any, res) => {
+    try {
+      const reel = await storage.createReel({
+        ...req.body,
+        userId: req.user.claims.sub,
+      });
+      res.json(reel);
+    } catch (error) {
+      console.error("Error creating reel:", error);
+      res.status(500).json({ message: "Failed to create reel" });
+    }
+  });
+
+  app.get("/api/reels/feed", isAuthenticated, async (req: any, res) => {
+    try {
+      const reels = await storage.getReelsFeed(req.user.claims.sub, 20);
+      res.json(reels);
+    } catch (error) {
+      console.error("Error fetching reels feed:", error);
+      res.status(500).json({ message: "Failed to fetch reels" });
+    }
+  });
+
+  app.get("/api/reels/:id", isAuthenticated, async (req, res) => {
+    try {
+      const reel = await storage.getReel(req.params.id);
+      if (!reel) {
+        return res.status(404).json({ message: "Reel not found" });
+      }
+      res.json(reel);
+    } catch (error) {
+      console.error("Error fetching reel:", error);
+      res.status(500).json({ message: "Failed to fetch reel" });
+    }
+  });
+
+  app.post("/api/reels/:id/like", isAuthenticated, async (req: any, res) => {
+    try {
+      const hasLiked = await storage.hasLikedReel(req.user.claims.sub, req.params.id);
+      
+      if (hasLiked) {
+        await storage.deleteReelLike(req.user.claims.sub, req.params.id);
+        res.json({ liked: false });
+      } else {
+        await storage.createReelLike(req.user.claims.sub, req.params.id);
+        res.json({ liked: true });
+      }
+    } catch (error) {
+      console.error("Error toggling reel like:", error);
+      res.status(500).json({ message: "Failed to toggle like" });
+    }
+  });
+
+  app.post("/api/reels/:id/view", isAuthenticated, async (req, res) => {
+    try {
+      await storage.incrementReelViews(req.params.id);
+      res.json({ message: "View recorded" });
+    } catch (error) {
+      console.error("Error recording reel view:", error);
+      res.status(500).json({ message: "Failed to record view" });
+    }
+  });
+
+  app.post("/api/reels/:id/comments", isAuthenticated, async (req: any, res) => {
+    try {
+      const comment = await storage.createReelComment({
+        userId: req.user.claims.sub,
+        reelId: req.params.id,
+        content: req.body.content,
+      });
+      res.json(comment);
+    } catch (error) {
+      console.error("Error creating reel comment:", error);
+      res.status(500).json({ message: "Failed to create comment" });
+    }
+  });
+
+  app.get("/api/reels/:id/comments", isAuthenticated, async (req, res) => {
+    try {
+      const comments = await storage.getReelComments(req.params.id);
+      res.json(comments);
+    } catch (error) {
+      console.error("Error fetching reel comments:", error);
+      res.status(500).json({ message: "Failed to fetch comments" });
+    }
+  });
+
+  // ===== DIRECT MESSAGES ROUTES =====
+  app.get("/api/conversations", isAuthenticated, async (req: any, res) => {
+    try {
+      const conversations = await storage.getUserConversations(req.user.claims.sub);
+      res.json(conversations);
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+      res.status(500).json({ message: "Failed to fetch conversations" });
+    }
+  });
+
+  app.post("/api/conversations", isAuthenticated, async (req: any, res) => {
+    try {
+      const { participantIds, type, title } = req.body;
+      const userId = req.user.claims.sub;
+      
+      if (type === "direct" && participantIds.length === 1) {
+        const existing = await storage.findDirectConversation(userId, participantIds[0]);
+        if (existing) {
+          return res.json(existing);
+        }
+      }
+      
+      const conversation = await storage.createConversation({
+        type: type || "direct",
+        title: title || null,
+        lastMessageAt: null,
+      });
+      
+      await storage.addConversationParticipant({
+        conversationId: conversation.id,
+        userId,
+        role: "member",
+        lastReadAt: null,
+      });
+      
+      for (const participantId of participantIds) {
+        await storage.addConversationParticipant({
+          conversationId: conversation.id,
+          userId: participantId,
+          role: "member",
+          lastReadAt: null,
+        });
+      }
+      
+      res.json(conversation);
+    } catch (error) {
+      console.error("Error creating conversation:", error);
+      res.status(500).json({ message: "Failed to create conversation" });
+    }
+  });
+
+  app.get("/api/conversations/:id/messages", isAuthenticated, async (req, res) => {
+    try {
+      const messages = await storage.getMessages(req.params.id, 50);
+      res.json(messages.reverse());
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      res.status(500).json({ message: "Failed to fetch messages" });
+    }
+  });
+
+  app.post("/api/conversations/:id/messages", isAuthenticated, async (req: any, res) => {
+    try {
+      const message = await storage.createMessage({
+        conversationId: req.params.id,
+        senderId: req.user.claims.sub,
+        content: req.body.content || null,
+        mediaAssetId: req.body.mediaAssetId || null,
+        replyToId: req.body.replyToId || null,
+        status: "sent",
+      });
+      res.json(message);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      res.status(500).json({ message: "Failed to send message" });
+    }
+  });
+
+  app.post("/api/conversations/:id/read", isAuthenticated, async (req: any, res) => {
+    try {
+      await storage.markConversationAsRead(req.params.id, req.user.claims.sub);
+      res.json({ message: "Conversation marked as read" });
+    } catch (error) {
+      console.error("Error marking conversation as read:", error);
+      res.status(500).json({ message: "Failed to mark as read" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

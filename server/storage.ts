@@ -110,6 +110,50 @@ export interface IStorage {
   // Search operations
   searchUsers(query: string, limit?: number): Promise<User[]>;
   searchPostsByHashtag(hashtag: string, limit?: number): Promise<Post[]>;
+  
+  // Media Asset operations
+  createMediaAsset(asset: InsertMediaAsset): Promise<MediaAsset>;
+  getMediaAsset(id: string): Promise<MediaAsset | undefined>;
+  getMediaAssetsByUser(userId: string, limit?: number): Promise<MediaAsset[]>;
+  
+  // Post Media operations (for carousel)
+  createPostMedia(postMedia: InsertPostMedia): Promise<PostMedia>;
+  getPostMedia(postId: string): Promise<PostMedia[]>;
+  
+  // Story operations
+  createStorySequence(sequence: InsertStorySequence): Promise<StorySequence>;
+  createStoryItem(item: InsertStoryItem): Promise<StoryItem>;
+  getActiveStories(userId: string): Promise<any[]>; // Stories from followed users
+  getUserStories(userId: string): Promise<any>;
+  deleteStory(storyId: string): Promise<void>;
+  deleteExpiredStories(): Promise<void>;
+  createStoryView(storyItemId: string, userId: string): Promise<void>;
+  
+  // Reel operations
+  createReel(reel: InsertReel): Promise<Reel>;
+  getReel(id: string): Promise<Reel | undefined>;
+  getReelsFeed(userId: string, limit?: number): Promise<any[]>;
+  getUserReels(userId: string, limit?: number): Promise<Reel[]>;
+  createReelLike(userId: string, reelId: string): Promise<void>;
+  deleteReelLike(userId: string, reelId: string): Promise<void>;
+  hasLikedReel(userId: string, reelId: string): Promise<boolean>;
+  incrementReelLikes(reelId: string): Promise<void>;
+  decrementReelLikes(reelId: string): Promise<void>;
+  incrementReelViews(reelId: string): Promise<void>;
+  createReelComment(comment: InsertReelComment): Promise<ReelComment>;
+  getReelComments(reelId: string): Promise<ReelComment[]>;
+  
+  // Direct Message operations
+  createConversation(conversation: InsertConversation): Promise<Conversation>;
+  getConversation(id: string): Promise<Conversation | undefined>;
+  getUserConversations(userId: string): Promise<any[]>;
+  findDirectConversation(userId1: string, userId2: string): Promise<Conversation | undefined>;
+  addConversationParticipant(participant: InsertConversationParticipant): Promise<ConversationParticipant>;
+  getConversationParticipants(conversationId: string): Promise<ConversationParticipant[]>;
+  createMessage(message: InsertMessage): Promise<Message>;
+  getMessages(conversationId: string, limit?: number): Promise<Message[]>;
+  markConversationAsRead(conversationId: string, userId: string): Promise<void>;
+  updateConversationTimestamp(conversationId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -472,6 +516,220 @@ export class DatabaseStorage implements IStorage {
       .where(sql`${posts.hashtags} @> ARRAY[${cleanHashtag}]::text[]`)
       .orderBy(desc(posts.createdAt))
       .limit(limit);
+  }
+
+  // Media Asset operations
+  async createMediaAsset(asset: InsertMediaAsset): Promise<MediaAsset> {
+    const [newAsset] = await db.insert(mediaAssets).values(asset).returning();
+    return newAsset;
+  }
+
+  async getMediaAsset(id: string): Promise<MediaAsset | undefined> {
+    const [asset] = await db.select().from(mediaAssets).where(eq(mediaAssets.id, id));
+    return asset;
+  }
+
+  async getMediaAssetsByUser(userId: string, limit: number = 100): Promise<MediaAsset[]> {
+    return db.select().from(mediaAssets).where(eq(mediaAssets.userId, userId)).orderBy(desc(mediaAssets.createdAt)).limit(limit);
+  }
+
+  // Post Media operations
+  async createPostMedia(pm: InsertPostMedia): Promise<PostMedia> {
+    const [newPostMedia] = await db.insert(postMedia).values(pm).returning();
+    return newPostMedia;
+  }
+
+  async getPostMedia(postId: string): Promise<PostMedia[]> {
+    return db.select().from(postMedia).where(eq(postMedia.postId, postId)).orderBy(postMedia.orderIndex);
+  }
+
+  // Story operations
+  async createStorySequence(sequence: InsertStorySequence): Promise<StorySequence> {
+    const [newSequence] = await db.insert(storySequences).values(sequence).returning();
+    return newSequence;
+  }
+
+  async createStoryItem(item: InsertStoryItem): Promise<StoryItem> {
+    const [newItem] = await db.insert(storyItems).values(item).returning();
+    return newItem;
+  }
+
+  async getActiveStories(userId: string): Promise<any[]> {
+    // Get stories from users that current user follows
+    const followingUsers = await db.select({ id: follows.followingId }).from(follows).where(eq(follows.followerId, userId));
+    if (followingUsers.length === 0) return [];
+    
+    const followingIds = followingUsers.map(f => f.id);
+    const now = new Date();
+    
+    // Get non-expired story sequences
+    const sequences = await db
+      .select()
+      .from(storySequences)
+      .where(and(inArray(storySequences.userId, followingIds), gt(storySequences.expiresAt, now), eq(storySequences.isHighlight, false)))
+      .orderBy(desc(storySequences.createdAt));
+    
+    return sequences;
+  }
+
+  async getUserStories(userId: string): Promise<any> {
+    const now = new Date();
+    const [sequence] = await db
+      .select()
+      .from(storySequences)
+      .where(and(eq(storySequences.userId, userId), gt(storySequences.expiresAt, now), eq(storySequences.isHighlight, false)))
+      .orderBy(desc(storySequences.createdAt))
+      .limit(1);
+    
+    if (!sequence) return null;
+    
+    const items = await db.select().from(storyItems).where(eq(storyItems.sequenceId, sequence.id)).orderBy(storyItems.orderIndex);
+    return { ...sequence, items };
+  }
+
+  async deleteStory(storyId: string): Promise<void> {
+    await db.delete(storySequences).where(eq(storySequences.id, storyId));
+  }
+
+  async deleteExpiredStories(): Promise<void> {
+    const now = new Date();
+    await db.delete(storySequences).where(and(lt(storySequences.expiresAt, now), eq(storySequences.isHighlight, false)));
+  }
+
+  async createStoryView(storyItemId: string, userId: string): Promise<void> {
+    await db.insert(storyViews).values({ storyItemId, userId }).onConflictDoNothing();
+    await db.update(storyItems).set({ viewsCount: sql`${storyItems.viewsCount} + 1` }).where(eq(storyItems.id, storyItemId));
+  }
+
+  // Reel operations
+  async createReel(reel: InsertReel): Promise<Reel> {
+    const [newReel] = await db.insert(reels).values(reel).returning();
+    return newReel;
+  }
+
+  async getReel(id: string): Promise<Reel | undefined> {
+    const [reel] = await db.select().from(reels).where(eq(reels.id, id));
+    return reel;
+  }
+
+  async getReelsFeed(userId: string, limit: number = 20): Promise<any[]> {
+    return db.select().from(reels).orderBy(desc(reels.createdAt)).limit(limit);
+  }
+
+  async getUserReels(userId: string, limit: number = 50): Promise<Reel[]> {
+    return db.select().from(reels).where(eq(reels.userId, userId)).orderBy(desc(reels.createdAt)).limit(limit);
+  }
+
+  async createReelLike(userId: string, reelId: string): Promise<void> {
+    await db.insert(reelLikes).values({ userId, reelId });
+    await this.incrementReelLikes(reelId);
+  }
+
+  async deleteReelLike(userId: string, reelId: string): Promise<void> {
+    await db.delete(reelLikes).where(and(eq(reelLikes.userId, userId), eq(reelLikes.reelId, reelId)));
+    await this.decrementReelLikes(reelId);
+  }
+
+  async hasLikedReel(userId: string, reelId: string): Promise<boolean> {
+    const [like] = await db.select().from(reelLikes).where(and(eq(reelLikes.userId, userId), eq(reelLikes.reelId, reelId)));
+    return !!like;
+  }
+
+  async incrementReelLikes(reelId: string): Promise<void> {
+    await db.update(reels).set({ likesCount: sql`${reels.likesCount} + 1` }).where(eq(reels.id, reelId));
+  }
+
+  async decrementReelLikes(reelId: string): Promise<void> {
+    await db.update(reels).set({ likesCount: sql`${reels.likesCount} - 1` }).where(eq(reels.id, reelId));
+  }
+
+  async incrementReelViews(reelId: string): Promise<void> {
+    await db.update(reels).set({ viewsCount: sql`${reels.viewsCount} + 1` }).where(eq(reels.id, reelId));
+  }
+
+  async createReelComment(comment: InsertReelComment): Promise<ReelComment> {
+    const [newComment] = await db.insert(reelComments).values(comment).returning();
+    await db.update(reels).set({ commentsCount: sql`${reels.commentsCount} + 1` }).where(eq(reels.id, comment.reelId));
+    return newComment;
+  }
+
+  async getReelComments(reelId: string): Promise<ReelComment[]> {
+    return db.select().from(reelComments).where(eq(reelComments.reelId, reelId)).orderBy(desc(reelComments.createdAt));
+  }
+
+  // Direct Message operations
+  async createConversation(conversation: InsertConversation): Promise<Conversation> {
+    const [newConv] = await db.insert(conversations).values(conversation).returning();
+    return newConv;
+  }
+
+  async getConversation(id: string): Promise<Conversation | undefined> {
+    const [conv] = await db.select().from(conversations).where(eq(conversations.id, id));
+    return conv;
+  }
+
+  async getUserConversations(userId: string): Promise<any[]> {
+    const userConvs = await db
+      .select({ conversationId: conversationParticipants.conversationId })
+      .from(conversationParticipants)
+      .where(eq(conversationParticipants.userId, userId));
+    
+    if (userConvs.length === 0) return [];
+    
+    const convIds = userConvs.map(c => c.conversationId);
+    return db.select().from(conversations).where(inArray(conversations.id, convIds)).orderBy(desc(conversations.lastMessageAt));
+  }
+
+  async findDirectConversation(userId1: string, userId2: string): Promise<Conversation | undefined> {
+    const user1Convs = await db
+      .select({ conversationId: conversationParticipants.conversationId })
+      .from(conversationParticipants)
+      .where(eq(conversationParticipants.userId, userId1));
+    
+    const user2Convs = await db
+      .select({ conversationId: conversationParticipants.conversationId })
+      .from(conversationParticipants)
+      .where(eq(conversationParticipants.userId, userId2));
+    
+    const user1ConvIds = user1Convs.map(c => c.conversationId);
+    const user2ConvIds = user2Convs.map(c => c.conversationId);
+    const sharedConvId = user1ConvIds.find(id => user2ConvIds.includes(id));
+    
+    if (!sharedConvId) return undefined;
+    
+    const [conv] = await db.select().from(conversations).where(and(eq(conversations.id, sharedConvId), eq(conversations.type, "direct")));
+    return conv;
+  }
+
+  async addConversationParticipant(participant: InsertConversationParticipant): Promise<ConversationParticipant> {
+    const [newParticipant] = await db.insert(conversationParticipants).values(participant).returning();
+    return newParticipant;
+  }
+
+  async getConversationParticipants(conversationId: string): Promise<ConversationParticipant[]> {
+    const participants = await db.select().from(conversationParticipants).where(eq(conversationParticipants.conversationId, conversationId));
+    return participants;
+  }
+
+  async createMessage(message: InsertMessage): Promise<Message> {
+    const [newMessage] = await db.insert(messages).values(message).returning();
+    await this.updateConversationTimestamp(message.conversationId);
+    return newMessage;
+  }
+
+  async getMessages(conversationId: string, limit: number = 50): Promise<Message[]> {
+    return db.select().from(messages).where(eq(messages.conversationId, conversationId)).orderBy(desc(messages.createdAt)).limit(limit);
+  }
+
+  async markConversationAsRead(conversationId: string, userId: string): Promise<void> {
+    await db
+      .update(conversationParticipants)
+      .set({ lastReadAt: new Date() })
+      .where(and(eq(conversationParticipants.conversationId, conversationId), eq(conversationParticipants.userId, userId)));
+  }
+
+  async updateConversationTimestamp(conversationId: string): Promise<void> {
+    await db.update(conversations).set({ lastMessageAt: new Date() }).where(eq(conversations.id, conversationId));
   }
 }
 

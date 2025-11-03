@@ -1,4 +1,4 @@
-import { Heart, MessageCircle, Share2, Lock } from "lucide-react";
+import { Heart, MessageCircle, Share2, Lock, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,8 @@ interface PostCardProps {
   isCreator?: boolean;
   hasLiked?: boolean;
   canView?: boolean;
+  mediaType?: "image" | "video" | "carousel";
+  mediaItems?: Array<{ url: string; type: "image" | "video" }>;
 }
 
 export function PostCard({
@@ -35,9 +37,21 @@ export function PostCard({
   isCreator = false,
   hasLiked = false,
   canView = true,
+  mediaType = "image",
+  mediaItems = [],
 }: PostCardProps) {
   const [isLiked, setIsLiked] = useState(hasLiked);
   const [likeCount, setLikeCount] = useState(likes);
+  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+
+  const displayMediaItems = mediaItems.length > 0 
+    ? mediaItems 
+    : imageUrl 
+    ? [{ url: imageUrl, type: mediaType as "image" | "video" }] 
+    : [];
+
+  const isCarousel = displayMediaItems.length > 1;
+  const currentMedia = displayMediaItems[currentMediaIndex];
 
   const handleLike = async () => {
     try {
@@ -78,13 +92,60 @@ export function PostCard({
         </div>
       </div>
 
-      {imageUrl && (
+      {displayMediaItems.length > 0 && (
         <div className="relative">
-          <img
-            src={imageUrl}
-            alt="Post content"
-            className="w-full aspect-square object-cover"
-          />
+          {currentMedia?.type === "video" ? (
+            <video
+              src={currentMedia.url}
+              className="w-full aspect-square object-cover"
+              controls
+              data-testid="post-video"
+            />
+          ) : (
+            <img
+              src={currentMedia?.url}
+              alt="Post content"
+              className="w-full aspect-square object-cover"
+              data-testid="post-image"
+            />
+          )}
+          
+          {/* Carousel Navigation */}
+          {isCarousel && (
+            <>
+              {currentMediaIndex > 0 && (
+                <button
+                  onClick={() => setCurrentMediaIndex(currentMediaIndex - 1)}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-1 hover-elevate"
+                  data-testid="button-carousel-prev"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+              )}
+              {currentMediaIndex < displayMediaItems.length - 1 && (
+                <button
+                  onClick={() => setCurrentMediaIndex(currentMediaIndex + 1)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-1 hover-elevate"
+                  data-testid="button-carousel-next"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              )}
+              
+              {/* Carousel Indicators */}
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                {displayMediaItems.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      index === currentMediaIndex ? "bg-white" : "bg-white/50"
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+          
           {isSubscriberOnly && !canView && (
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center">
               <div className="text-center text-white">

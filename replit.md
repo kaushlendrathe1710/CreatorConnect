@@ -2,85 +2,7 @@
 
 ## Overview
 
-CreatorHub is a subscription-based social media platform that enables creators to monetize their content through monthly subscriptions. The platform combines Instagram's visual-first feed design with Patreon's creator monetization model, allowing creators to share exclusive content with subscribers while building a loyal community. Users can browse public posts, follow creators, and subscribe to access premium subscriber-only content.
-
-## Recent Updates (November 2025)
-
-**Instagram Critical Features Implementation** (In Progress):
-- **Database Schema**: Added comprehensive schema for 5 critical Instagram features:
-  1. **Stories**: 24-hour disappearing content with `story_sequences`, `story_items`, `story_views` tables
-  2. **Reels**: Short-form vertical videos with `reels`, `reel_likes`, `reel_comments` tables
-  3. **Direct Messages**: Real-time messaging with `conversations`, `conversation_participants`, `messages` tables
-  4. **Video Posts**: Video support via `media_assets` table with metadata (duration, dimensions, thumbnails)
-  5. **Carousel Posts**: Multiple media per post via `post_media` join table
-- **Media Infrastructure**: Shared `media_assets` table for all media types (images, videos) across posts, stories, reels, and messages
-- **Schema Quality**: All tables have proper indexes, foreign key constraints, unique constraints, and Drizzle ORM relations
-- **Posts Table Enhancement**: Added `mediaType` field, made `imageUrl` nullable for backward compatibility
-- **Backend Implementation**: (In Progress) Storage methods and API routes for all features
-
-**Admin Features & Dashboard**: Complete admin system with Instagram-style admin panel:
-- **Super Admin**: Hardcoded admin user (kaushlendra.k12@fms.edu) created on server startup
-  - Cannot be deleted or demoted
-  - Full platform access and control
-- **Admin Dashboard** with left sidebar navigation:
-  - Dashboard: Overview stats (Total Users, Creators, Posts, Admins)
-  - Users: Manage all users, grant/revoke admin privileges, delete users
-  - Posts: Content moderation with ability to delete any post
-  - Settings: Platform configuration (coming soon)
-- **Admin Panel Button**: Visible only to admin users in main navigation sidebar
-- **Admin Middleware**: Secure authorization checks for all admin routes
-- **Database Schema**: Added `isAdmin` boolean field to users table
-- **Security**: Super admin cannot be deleted or modified through admin panel
-
-## Recent Updates (November 2025)
-
-**Instagram-Style Application Layout**: Complete redesign to match Instagram's layout with three-panel design:
-- **Left Sidebar Navigation** (desktop):
-  - CreatorHub logo
-  - Navigation menu: Home, Search, Explore, Messages, Notifications, Create, Profile
-  - Large, clickable buttons with icons and labels
-- **Center Feed Area**:
-  - Main content area with post cards
-  - Clean feed layout matching Instagram's design
-  - Empty state for no posts
-- **Right Sidebar** (desktop):
-  - Current user profile card with avatar, username, and "Switch" button
-  - "Suggested for you" section with Follow buttons
-  - User recommendations with avatars and usernames
-  - Footer links (About, Help, Press, API, Jobs, Privacy, Terms)
-- **API Enhancement**: Added `/api/users/suggested` endpoint for user recommendations
-- **Default Landing Page**: After email OTP authentication, users land on the Instagram-style feed
-
-**Instagram-Style Profile Dashboard**: Profile page with Instagram-replica design:
-- **Profile Header**: Large avatar (w-32 to w-40), username, stats display (Posts/Followers/Following)
-- **Bio Section**: User bio, creator badge, subscription pricing (properly formatted: $9.99/month not $999/month)
-- **Action Buttons**: Edit Profile (opens modal), Share Profile, Settings with modern hover effects
-- **Tabbed Interface**: 
-  - Posts: 3-column grid layout with hover effects showing likes/comments overlay
-  - Analytics (creators only): Cards showing Total Subscribers, Monthly Revenue, Engagement Rate
-  - About: User details (email, phone, account type) with logout button
-- **Critical Bug Fix**: Subscription prices stored in cents, now properly converted to dollars before display using `(priceInCents / 100).toFixed(2)`
-
-**Landing Page Redesign**: Completely redesigned the landing page to appeal to both creators and fans with an Instagram-inspired modern aesthetic:
-- Enhanced hero section with bold "Create. Share. Earn." messaging and social proof (10K+ creators, 500K+ subscribers stats)
-- Dual-audience "How It Works" section with tabs for Creators and Fans, showing step-by-step processes for each audience
-- "Built for Everyone" feature showcase with separate sections highlighting benefits for creators (analytics, payments, content control) and fans (discovery, premium access, engagement)
-- Improved visual hierarchy with better spacing, cards with hover effects, and numbered steps
-- Clearer call-to-action buttons for both "Start Creating" and "Explore Creators"
-
-**Email OTP Authentication System**: Custom email verification with Nodemailer integration:
-- Single "Log In" button - all users use the same entry point
-- Two-step authentication process:
-  1. **Email Entry**: User enters email address
-  2. **OTP Verification**: 6-digit code sent to email, expires in 10 minutes
-- Email features:
-  - Professional branded OTP emails via SMTP
-  - Resend OTP functionality
-  - Maximum 5 verification attempts per code
-  - Auto-cleanup of expired codes
-- **First-time users**: Automatically redirected to onboarding page (name + mobile number)
-- **Returning users**: Automatically redirected to feed/dashboard
-- Mobile number field added to user schema for enhanced user profiles
+CreatorHub is a subscription-based social media platform designed to empower creators to monetize their content. It merges Instagram's visual-first content feed with Patreon's subscription model, allowing creators to share exclusive content with a loyal, paying community. The platform enables users to browse public posts, follow creators, and subscribe for access to premium content.
 
 ## User Preferences
 
@@ -90,114 +12,71 @@ Preferred communication style: Simple, everyday language.
 
 ### Frontend Architecture
 
-**Technology Stack**: React 18 with TypeScript, using Vite as the build tool and bundler.
-
-**UI Framework**: The application uses shadcn/ui component library built on Radix UI primitives with Tailwind CSS for styling. This provides accessible, customizable components with a modern design system following the "New York" style variant.
-
-**Routing**: Client-side routing is handled by Wouter, a minimal routing library. The application has distinct routes for authenticated and unauthenticated users, with a landing page for guests and feed/profile/dashboard pages for logged-in users.
-
-**State Management**: TanStack Query (React Query) manages server state and data fetching with built-in caching and synchronization. Authentication state is handled through a custom `useAuth` hook that queries the user endpoint.
-
-**Design System**: The application follows a comprehensive design system with:
-- Typography using Inter and DM Sans fonts
-- Spacing primitives based on Tailwind's 8px grid system
-- Theme support (light/dark mode) with CSS custom properties
-- Consistent elevation patterns for interactive elements
+The frontend uses React 18 with TypeScript and Vite. It leverages shadcn/ui (built on Radix UI and Tailwind CSS) for a modern, accessible UI. Client-side routing is handled by Wouter, and TanStack Query manages server state and data fetching. A comprehensive design system with consistent typography, spacing, and theme support (light/dark mode) is implemented.
 
 ### Backend Architecture
 
-**Server Framework**: Express.js server written in TypeScript, following a monorepo structure where client and server code share type definitions.
-
-**Authentication**: Implements Replit Auth using OpenID Connect (OIDC) for authentication. The system supports Google, Apple, GitHub, and email-based login. Sessions are stored in PostgreSQL using connect-pg-simple, with a 7-day session lifetime.
-
-**API Design**: RESTful API endpoints organized by resource type (users, posts, comments, subscriptions, notifications). The server uses middleware for logging, request parsing, and authentication checks.
-
-**Data Access Layer**: A storage abstraction layer (`storage.ts`) provides a clean interface for database operations, making the codebase more maintainable and testable.
+The backend is an Express.js server in TypeScript, structured as a monorepo sharing type definitions with the client. Authentication uses Replit Auth (OpenID Connect) with Google, Apple, GitHub, and email login options, storing sessions in PostgreSQL via `connect-pg-simple`. APIs are RESTful, organized by resource, and utilize middleware for logging, parsing, and authentication. A `storage.ts` abstraction layer manages database operations.
 
 ### Database Architecture
 
-**Database**: PostgreSQL database accessed through Neon serverless driver with WebSocket support for connection pooling.
-
-**ORM**: Drizzle ORM provides type-safe database queries with schema definitions in TypeScript. The schema uses UUID primary keys and includes proper foreign key relationships with cascade deletes.
-
-**Core Tables**:
-- `users`: Stores user profiles, creator status, subscription pricing, and Stripe integration details
-- `posts`: Content posts with visibility flags (public vs subscriber-only)
-- `follows`: User following relationships
-- `likes`: Post likes
-- `comments`: Post comments
-- `subscriptions`: Stripe subscription records linking subscribers to creators
-- `notifications`: User activity notifications
-- `sessions`: Server-side session storage for authentication
-
-**Indexes**: Strategic indexes on foreign keys and frequently queried fields (username, email, post timestamps) for performance.
+A PostgreSQL database, accessed via Neon serverless driver, is used with Drizzle ORM for type-safe queries. Core tables include `users`, `posts`, `follows`, `likes`, `comments`, `subscriptions`, `notifications`, and `sessions`. Strategic indexing is applied for performance.
 
 ### Payment Processing
 
-**Stripe Integration**: Handles subscription payments and creator payouts. The architecture supports:
-- Customer creation and management
-- Subscription creation with pricing plans
-- Payment intent handling for subscription setup
-- Webhook processing for subscription lifecycle events
-
-**Implementation Pattern**: Uses Stripe's recommended approach with customer IDs stored in the users table and subscription IDs tracked in the subscriptions table. The frontend uses Stripe Elements for secure payment collection.
+Stripe is integrated for subscription payments and creator payouts, supporting customer/subscription management, payment intents, and webhook processing. Stripe's recommended approach is used, storing customer and subscription IDs, with Stripe Elements for secure frontend payment collection.
 
 ### File Storage
 
-**Object Storage**: Google Cloud Storage integration through Replit's sidecar service for storing user-uploaded media (images and videos).
-
-**Access Control**: Custom ACL (Access Control List) system built on top of GCS that enforces visibility rules:
-- Public objects accessible to all users
-- Private objects restricted to the owner
-- Subscriber-only objects accessible to active subscribers
-
-**Upload Flow**: Uses signed URLs for direct client-to-storage uploads, reducing server load and improving upload performance. The `ObjectUploader` component wraps Uppy for a polished upload experience.
+Google Cloud Storage (GCS) is used for media storage via Replit's sidecar service. A custom ACL system enforces public, private, and subscriber-only access. Signed URLs enable direct client-to-storage uploads, and Uppy is used for the upload experience.
 
 ### Security Architecture
 
-**Authentication Security**: 
-- Session-based authentication with secure HTTP-only cookies
-- CSRF protection through same-site cookie settings
-- Session secrets stored in environment variables
+Session-based authentication with secure HTTP-only cookies and CSRF protection is implemented. Middleware handles authorization (`isAuthenticated`). Zod schemas, derived from Drizzle, validate API input for type safety.
 
-**Authorization Pattern**: Middleware-based authentication checks (`isAuthenticated`) protect sensitive endpoints. Object access uses a policy-based system evaluated at request time.
+### Key Features
 
-**Data Validation**: Zod schemas derived from Drizzle table definitions validate incoming data on API endpoints, ensuring type safety and preventing malformed requests.
+*   **Instagram-like Features**: Full implementation of Stories, Reels, Direct Messages, Video Posts, and Carousel Posts, all integrated across the stack.
+*   **Admin Dashboard**: A comprehensive admin panel (accessible to a super admin and other designated admins) for user management, content moderation, and platform configuration.
+*   **Instagram-Style Layout**: A three-panel layout with a left sidebar navigation, central content feed, and a right sidebar for user suggestions.
+*   **Instagram-Style Profile Dashboard**: Detailed user profile pages with stats, bio, action buttons, and tabbed content (posts, analytics for creators, account details).
+*   **Landing Page Redesign**: A modern, Instagram-inspired landing page designed to attract both creators and fans, highlighting platform benefits and features.
+*   **Email OTP Authentication**: A custom two-step email OTP system for login, including first-time user onboarding and professional branded emails.
 
 ## External Dependencies
 
 ### Authentication & Identity
-- **Replit Auth (OIDC)**: Primary authentication provider supporting multiple identity providers (Google, Apple, GitHub, email)
-- **OpenID Client**: OIDC client library for authentication flows
-- **Passport.js**: Authentication middleware for Express
+*   **Replit Auth (OIDC)**: Primary authentication.
+*   **OpenID Client**: OIDC client library.
+*   **Passport.js**: Authentication middleware.
 
 ### Payment Processing
-- **Stripe**: Complete payment infrastructure including customer management, subscriptions, and webhook handling
-- **@stripe/stripe-js**: Frontend Stripe SDK for payment forms
-- **@stripe/react-stripe-js**: React components for Stripe Elements integration
+*   **Stripe**: Payment infrastructure.
+*   **@stripe/stripe-js**: Frontend SDK.
+*   **@stripe/react-stripe-js**: React components for Stripe Elements.
 
 ### Database & ORM
-- **PostgreSQL**: Primary database via Neon serverless
-- **Drizzle ORM**: Type-safe ORM with schema management
-- **@neondatabase/serverless**: Serverless Postgres driver with WebSocket support
+*   **PostgreSQL**: Database via Neon serverless.
+*   **Drizzle ORM**: Type-safe ORM.
+*   **@neondatabase/serverless**: Serverless Postgres driver.
 
 ### File Storage
-- **Google Cloud Storage**: Object storage for media files
-- **Uppy**: Modern file uploader with dashboard UI, progress tracking, and AWS S3-compatible uploads
-- **@google-cloud/storage**: GCS client SDK
+*   **Google Cloud Storage**: Object storage.
+*   **Uppy**: File uploader.
+*   **@google-cloud/storage**: GCS client SDK.
 
 ### Frontend Framework & UI
-- **React 18**: UI framework with modern hooks and concurrent features
-- **Vite**: Fast build tool and development server
-- **Wouter**: Lightweight client-side routing
-- **TanStack Query**: Server state management with caching
-- **Radix UI**: Accessible component primitives (40+ components including dialogs, dropdowns, popovers, tooltips)
-- **Tailwind CSS**: Utility-first CSS framework
-- **shadcn/ui**: Pre-built component library on Radix UI
-- **date-fns**: Date formatting and manipulation
+*   **React 18**: UI framework.
+*   **Vite**: Build tool.
+*   **Wouter**: Client-side routing.
+*   **TanStack Query**: Server state management.
+*   **Radix UI**: Accessible component primitives.
+*   **Tailwind CSS**: CSS framework.
+*   **shadcn/ui**: Component library.
+*   **date-fns**: Date manipulation.
 
 ### Development Tools
-- **TypeScript**: Type safety across full stack
-- **ESBuild**: Fast JavaScript bundler for production builds
-- **TSX**: TypeScript execution for development server
-- **Drizzle Kit**: Database migration and schema management tool
+*   **TypeScript**: Type safety.
+*   **ESBuild**: JavaScript bundler.
+*   **TSX**: TypeScript execution.
+*   **Drizzle Kit**: Migration and schema management.

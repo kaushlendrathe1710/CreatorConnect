@@ -1,4 +1,4 @@
-import { Home, Search, Compass, MessageCircle, Heart, PlusSquare, User, Shield } from "lucide-react";
+import { Home, Search, Compass, MessageCircle, Heart, PlusSquare, User, Shield, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,6 +32,7 @@ export function InstagramLayout({ children }: InstagramLayoutProps) {
     { icon: Home, label: "Home", path: "/", testId: "nav-home" },
     { icon: Search, label: "Search", path: "/search", testId: "nav-search" },
     { icon: Compass, label: "Explore", path: "/explore", testId: "nav-explore" },
+    { icon: Play, label: "Reels", path: "/reels", testId: "nav-reels" },
     { icon: MessageCircle, label: "Messages", path: "/messages", testId: "nav-messages" },
     { icon: Heart, label: "Notifications", path: "/notifications", testId: "nav-notifications", isSpecial: true },
     { icon: PlusSquare, label: "Create", onClick: () => setShowCreatePost(true), testId: "nav-create" },

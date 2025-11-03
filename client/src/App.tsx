@@ -13,6 +13,7 @@ import FeedPage from "@/pages/FeedPage";
 import SearchPage from "@/pages/SearchPage";
 import ExplorePage from "@/pages/ExplorePage";
 import MessagesPage from "@/pages/MessagesPage";
+import ReelsPage from "@/pages/ReelsPage";
 import ProfilePage from "@/pages/ProfilePage";
 import DashboardPage from "@/pages/DashboardPage";
 import NotificationsPage from "@/pages/NotificationsPage";
@@ -54,6 +55,7 @@ function Router() {
           <Route path="/search" component={SearchPage} />
           <Route path="/explore" component={ExplorePage} />
           <Route path="/messages" component={MessagesPage} />
+          <Route path="/reels" component={ReelsPage} />
           <Route path="/profile/:username" component={ProfilePage} />
           <Route path="/dashboard" component={DashboardPage} />
           <Route path="/notifications" component={NotificationsPage} />
