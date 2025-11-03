@@ -1,24 +1,20 @@
-import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { NotificationBell } from "@/components/NotificationBell";
+import { InstagramLayout } from "@/components/InstagramLayout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Home, Grid3x3, TrendingUp, Settings, Share2, Edit, 
+  Grid3x3, TrendingUp, Settings, Share2, Edit, 
   Heart, MessageCircle, Lock, BarChart3, Users, DollarSign,
-  PlusCircle, LogOut
+  LogOut
 } from "lucide-react";
 import { useState } from "react";
 import { CreatePostModal } from "@/components/CreatePostModal";
-import { formatDistanceToNow } from "date-fns";
 
 export default function DashboardPage() {
-  const [, setLocation] = useLocation();
   const { user } = useAuth();
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [activeTab, setActiveTab] = useState("posts");
@@ -54,33 +50,10 @@ export default function DashboardPage() {
   const followingCount = currentUser.followingCount || 0;
 
   return (
-    <div className="min-h-screen pb-20 md:pb-0">
-      {/* Top Navigation */}
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setLocation("/feed")}>
-            <Home className="w-5 h-5" />
-            <h1 className="text-xl font-bold hidden md:block">CreatorHub</h1>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowCreatePost(true)}
-              data-testid="button-create-post"
-            >
-              <PlusCircle className="w-5 h-5" />
-            </Button>
-            <NotificationBell />
-            <ThemeToggle />
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-6xl mx-auto px-4 py-8">
+    <InstagramLayout>
+      <div className="pb-8">
         {/* Profile Header Section */}
-        <div className="mb-12">
+        <div className="mb-8">
           <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start">
             {/* Avatar */}
             <div className="flex justify-center md:justify-start w-full md:w-auto">
@@ -113,7 +86,6 @@ export default function DashboardPage() {
                   <Button 
                     variant="secondary"
                     size="sm"
-                    onClick={() => setLocation("/settings")}
                     data-testid="button-edit-profile"
                   >
                     <Edit className="w-4 h-4 mr-2" />
@@ -129,7 +101,6 @@ export default function DashboardPage() {
                   <Button 
                     variant="outline"
                     size="icon"
-                    onClick={() => setLocation("/settings")}
                     data-testid="button-settings"
                   >
                     <Settings className="w-4 h-4" />
@@ -373,40 +344,9 @@ export default function DashboardPage() {
             </Card>
           </TabsContent>
         </Tabs>
-      </main>
 
-      <CreatePostModal open={showCreatePost} onOpenChange={setShowCreatePost} />
-
-      {/* Bottom Navigation (Mobile) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t h-16 flex items-center justify-around z-50">
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={() => setLocation("/feed")}
-          data-testid="button-nav-home"
-        >
-          <Home className="w-6 h-6" />
-        </Button>
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={() => setShowCreatePost(true)}
-          data-testid="button-nav-create"
-        >
-          <PlusCircle className="w-6 h-6" />
-        </Button>
-        <NotificationBell />
-        <Button 
-          variant="ghost" 
-          size="icon"
-          data-testid="button-nav-profile"
-        >
-          <Avatar className="w-7 h-7">
-            <AvatarImage src={currentUser.profileImageUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.username}`} />
-            <AvatarFallback>{displayName.charAt(0)}</AvatarFallback>
-          </Avatar>
-        </Button>
-      </nav>
-    </div>
+        <CreatePostModal open={showCreatePost} onOpenChange={setShowCreatePost} />
+      </div>
+    </InstagramLayout>
   );
 }

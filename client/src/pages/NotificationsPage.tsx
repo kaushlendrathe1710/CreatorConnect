@@ -1,7 +1,5 @@
 import { NotificationItem } from "@/components/NotificationItem";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { InstagramLayout } from "@/components/InstagramLayout";
 
 const mockNotifications = [
   {
@@ -43,27 +41,16 @@ const mockNotifications = [
 
 export default function NotificationsPage() {
   return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b">
-        <div className="max-w-2xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" data-testid="button-back">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <h1 className="text-xl font-bold">Notifications</h1>
-          </div>
-          
-          <ThemeToggle />
-        </div>
-      </header>
-
-      <main className="max-w-2xl mx-auto">
-        <div className="divide-y">
+    <InstagramLayout>
+      <div>
+        <h2 className="text-2xl font-bold mb-6">Notifications</h2>
+        
+        <div className="divide-y border rounded-lg">
           {mockNotifications.map((notification) => (
             <NotificationItem key={notification.id} {...notification} />
           ))}
         </div>
-      </main>
-    </div>
+      </div>
+    </InstagramLayout>
   );
 }

@@ -1,20 +1,17 @@
 import { useState } from "react";
-import { useRoute, useLocation } from "wouter";
+import { useRoute } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { ProfileHeader } from "@/components/ProfileHeader";
 import { SubscriptionModal } from "@/components/SubscriptionModal";
 import { EditProfileModal } from "@/components/EditProfileModal";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { NotificationBell } from "@/components/NotificationBell";
-import { ArrowLeft, Grid, Heart } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { InstagramLayout } from "@/components/InstagramLayout";
+import { Grid, Heart } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { User, Post } from "@shared/schema";
 
 export default function ProfilePage() {
   const [, params] = useRoute("/profile/:username");
-  const [, setLocation] = useLocation();
   const { user: currentUser } = useAuth();
   const [subscriptionModalOpen, setSubscriptionModalOpen] = useState(false);
   const [editProfileModalOpen, setEditProfileModalOpen] = useState(false);
@@ -37,43 +34,27 @@ export default function ProfilePage() {
 
   if (profileLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Loading profile...</p>
-      </div>
+      <InstagramLayout>
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">Loading profile...</p>
+        </div>
+      </InstagramLayout>
     );
   }
 
   if (!profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Profile not found</p>
-      </div>
+      <InstagramLayout>
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">Profile not found</p>
+        </div>
+      </InstagramLayout>
     );
   }
 
   return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b">
-        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => setLocation("/feed")}
-            data-testid="button-back"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          
-          <h2 className="font-semibold">{profile.username || profile.firstName}</h2>
-          
-          <div className="flex items-center gap-2">
-            <NotificationBell />
-            <ThemeToggle />
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-5xl mx-auto">
+    <InstagramLayout>
+      <div className="pb-8">
         <ProfileHeader
           username={profile.username || ""}
           displayName={`${profile.firstName || ""} ${profile.lastName || ""}`.trim() || profile.username || "User"}
@@ -91,7 +72,7 @@ export default function ProfilePage() {
           onSubscribe={() => setSubscriptionModalOpen(true)}
         />
 
-        <Tabs defaultValue="posts" className="px-6">
+        <Tabs defaultValue="posts" className="mt-6">
           <TabsList className="w-full grid grid-cols-2">
             <TabsTrigger value="posts" data-testid="tab-posts">
               <Grid className="w-4 h-4 mr-2" />
@@ -143,23 +124,23 @@ export default function ProfilePage() {
             </div>
           </TabsContent>
         </Tabs>
-      </main>
 
-      <SubscriptionModal
-        isOpen={subscriptionModalOpen}
-        onClose={() => setSubscriptionModalOpen(false)}
-        creatorName={`${profile.firstName || ""} ${profile.lastName || ""}`.trim() || profile.username || "Creator"}
-        price={profile.subscriptionPrice || 0}
-        creatorId={profile.id}
-      />
-
-      {isOwnProfile && (
-        <EditProfileModal
-          isOpen={editProfileModalOpen}
-          onClose={() => setEditProfileModalOpen(false)}
-          user={profile}
+        <SubscriptionModal
+          isOpen={subscriptionModalOpen}
+          onClose={() => setSubscriptionModalOpen(false)}
+          creatorName={`${profile.firstName || ""} ${profile.lastName || ""}`.trim() || profile.username || "Creator"}
+          price={profile.subscriptionPrice || 0}
+          creatorId={profile.id}
         />
-      )}
-    </div>
+
+        {isOwnProfile && (
+          <EditProfileModal
+            isOpen={editProfileModalOpen}
+            onClose={() => setEditProfileModalOpen(false)}
+            user={profile}
+          />
+        )}
+      </div>
+    </InstagramLayout>
   );
 }
